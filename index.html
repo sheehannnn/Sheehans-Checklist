@@ -1151,7 +1151,7 @@ function toggleDoneSection(btn){
   }, 30000);
   // Register service worker for PWA / offline support
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sw.js').then(reg => {
+    navigator.serviceWorker.register('/Sheehans-Checklist/sw.js', {scope: '/Sheehans-Checklist/'}).then(reg => {
       console.log('SW registered:', reg.scope);
     }).catch(err => console.log('SW failed:', err));
   }
