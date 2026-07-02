@@ -382,6 +382,7 @@ const priMeta={urgent:{l:'Urgent',c:'tag-urgent'},high:{l:'High',c:'tag-high'},n
 const STORE_KEY = 'sheehan_v2';
 let lists=[], cats={}, tasks={}, nextId=200, nextListId=20;
 let lastSyncTime='';
+let lastEditTime='';
 let activeTab='__today__';
 let _editListId='', _editCatLid='', _editCatOld='', _editTaskId='', _editTaskLid='';
 let _addTaskLid='', _addTaskCat='';
@@ -759,7 +760,7 @@ function renderTodayView(){
   }
 
   if(pending.length===0 && doneArr.length===0){
-    h += `<div class="empty-today"><div class="e-icon">✅</div><h3>All clear for today!</h3><p>No tasks due today. Assign today's date to a task and it'll appear here automatically.</p></div>`;
+    h += `<div class="empty-today"><div class="e-icon">✅</div><h3>All clear for today!</h3><p>Tasks assigned today's date will appear here automatically. They stay visible in their original tab too.</p></div>`;
   } else {
     const grouped={};
     pending.forEach(x=>{if(!grouped[x.lid])grouped[x.lid]={label:x.label,items:[]};grouped[x.lid].items.push(x);});
@@ -970,7 +971,7 @@ function todayTaskHTML(t, lid){
       <button class="ta-btn edit-btn" onclick="openEditTask(${t.id},'${lid}')" title="Edit">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
-      <button class="ta-btn del-btn" onclick="doDeleteTask(${t.id},'${lid}');renderTodayView()" title="Delete">
+      <button class="ta-btn del-btn" onclick="doDeleteTask(${t.id},'${lid}');renderTodayView();renderListView('${lid}');renderTabs();" title="Delete">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
       </button>
     </div>
@@ -988,7 +989,12 @@ function toggleTask(id, lid){
 }
 function toggleTaskToday(id, lid){
   const t=(tasks[lid]||[]).find(t=>t.id===id); if(!t)return;
-  t.done=!t.done; save(); renderTodayView(); renderListView(lid); renderTabs();
+  t.done=!t.done;
+  save();
+  // Refresh today view, source list, and tabs — task stays in source list too
+  renderTodayView();
+  renderListView(lid);
+  renderTabs();
 }
 function doDeleteTask(id, lid){
   tasks[lid]=(tasks[lid]||[]).filter(t=>t.id!==id); save(); renderListView(lid);
@@ -1011,9 +1017,12 @@ function doAddTask(){
   const lid=_addTaskLid;
   if(!tasks[lid]) tasks[lid]=[];
   tasks[lid].push({id:nextId++,name,note:document.getElementById('inTaskNote').value.trim(),priority:document.getElementById('inTaskPri').value,cat:document.getElementById('inTaskCat').value,date:document.getElementById('inTaskDate').value,time:document.getElementById('inTaskTime').value,done:false});
-  save(); closeM('mAddTask'); renderListView(lid); renderTabs();
-  if(activeTab==='__today__') renderTodayView();
-  if(activeTab==='__overdue__') renderOverdueView();
+  save(); closeM('mAddTask');
+  renderListView(lid);
+  renderTabs();
+  // Always refresh today/overdue so newly added tasks appear there if date matches
+  renderTodayView();
+  renderOverdueView();
 }
 
 function openEditTask(id, lid){
@@ -1039,14 +1048,18 @@ function doSaveEdit(){
   t.cat=document.getElementById('inEditCat').value;
   t.date=document.getElementById('inEditDate').value;
   t.time=document.getElementById('inEditTime').value;
-  save(); closeM('mEditTask'); renderListView(_editTaskLid); renderTabs();
-  if(activeTab==='__today__') renderTodayView();
-  if(activeTab==='__overdue__') renderOverdueView();
+  save(); closeM('mEditTask');
+  renderListView(_editTaskLid);
+  renderTabs();
+  // Always refresh today and overdue views since date may have changed
+  renderTodayView();
+  renderOverdueView();
 }
 function doDeleteFromEdit(){
-  doDeleteTask(_editTaskId,_editTaskLid); closeM('mEditTask'); renderTabs();
-  if(activeTab==='__today__') renderTodayView();
-  if(activeTab==='__overdue__') renderOverdueView();
+  doDeleteTask(_editTaskId,_editTaskLid); closeM('mEditTask');
+  renderTabs();
+  renderTodayView();
+  renderOverdueView();
 }
 
 // ═══════════════════════════════════════════════════════
