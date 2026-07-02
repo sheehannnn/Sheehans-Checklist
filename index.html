@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sheehan's Checklist</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0071E3">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sheehan's Checklist">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#F5F5F7;--card:#FFFFFF;--border:#E5E5EA;--border-strong:#C7C7CC;
+  --text:#1D1D1F;--sub:#6E6E73;--muted:#AEAEB2;
+  --accent:#0071E3;--accent-light:#E8F1FD;--accent-dark:#0077ED;
+  --red:#FF3B30;--red-bg:#FFF2F1;--red-text:#C0392B;
+  --amber:#FF9500;--amber-bg:#FFF8EE;--amber-text:#8A4A00;
+  --green:#34C759;--green-bg:#F0FBF3;--green-text:#1A6B32;
+  --blue:#007AFF;--blue-bg:#F0F5FF;--blue-text:#0040A0;
+  --r:14px;--r-sm:10px;--r-xs:7px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --shadow:0 2px 16px rgba(0,0,0,.07);
+  --shadow-lg:0 12px 48px rgba(0,0,0,.16);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#000000;--card:#1C1C1E;--border:#38383A;--border-strong:#545456;
+  --text:#F5F5F7;--sub:#98989D;--muted:#636366;
+  --accent:#409CFF;--accent-light:#1A2A3D;--accent-dark:#5AABFF;
+  --red:#FF453A;--red-bg:#2D1210;--red-text:#FF6961;
+  --amber:#FFD60A;--amber-bg:#2D1F00;--amber-text:#FFD60A;
+  --green:#30D158;--green-bg:#0A2812;--green-text:#30D158;
+  --blue:#409CFF;--blue-bg:#0A1E3D;--blue-text:#409CFF;
+  --shadow:0 2px 16px rgba(0,0,0,.4);--shadow-lg:0 12px 48px rgba(0,0,0,.6);
+}}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;font-size:16px;}
+
+/* ─── NAV ─────────────────────────────────────────────── */
+.nav{background:rgba(255,255,255,.82);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
+@media(prefers-color-scheme:dark){.nav{background:rgba(28,28,30,.88);}}
+.nav-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 8px;}
+.brand h1{font-size:18px;font-weight:700;letter-spacing:-.4px;color:var(--text);}
+.brand p{font-size:11px;color:var(--muted);margin-top:1px;letter-spacing:.02em;}
+.nav-icons{display:flex;gap:6px;}
+.ni{width:34px;height:34px;border-radius:50%;border:none;background:var(--border);color:var(--sub);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.ni:active{transform:scale(.9);}
+.ni svg{width:15px;height:15px;pointer-events:none;}
+.ni.on{background:var(--accent-light);color:var(--accent);}
+.ni.pulse{animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,113,227,.4);}50%{box-shadow:0 0 0 6px rgba(0,113,227,0);}}
+.tabs-wrap{display:flex;align-items:center;padding:0 14px 0 20px;overflow:hidden;}
+.tabs{display:flex;overflow-x:auto;flex:1;scrollbar-width:none;gap:0;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:8px 12px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s,border-color .2s;display:flex;align-items:center;gap:4px;letter-spacing:-.1px;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+.tab-del{display:none;width:15px;height:15px;background:var(--muted);color:var(--bg);border:none;border-radius:50%;font-size:11px;cursor:pointer;align-items:center;justify-content:center;transition:background .15s;line-height:1;}
+.tab.active .tab-del{display:inline-flex;}
+.tab-del:hover{background:var(--red)!important;}
+.tab-edit-icon{opacity:0;transition:opacity .15s;cursor:pointer;}
+.tab:hover .tab-edit-icon,.tab.active .tab-edit-icon{opacity:.5;}
+.new-tab-btn{flex-shrink:0;width:28px;height:28px;border:1.5px dashed var(--border-strong);border-radius:8px;background:none;color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:8px;margin-bottom:2px;transition:border-color .2s,color .2s;}
+.new-tab-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ─── VIEWS ───────────────────────────────────────────── */
+.view{display:none;padding:20px 20px 120px;max-width:680px;margin:0 auto;animation:fadeUp .2s ease both;}
+.view.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── TODAY HERO ──────────────────────────────────────── */
+.today-hero{background:linear-gradient(140deg,#0071E3 0%,#5E5CE6 100%);border-radius:var(--r);padding:20px 22px;margin-bottom:16px;color:#fff;box-shadow:0 4px 24px rgba(0,113,227,.3);}
+.today-hero h2{font-size:24px;font-weight:700;letter-spacing:-.5px;}
+.today-hero .date-str{font-size:13px;opacity:.8;margin-top:2px;}
+.today-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;}
+.ts{background:rgba(255,255,255,.15);border-radius:var(--r-sm);padding:10px 6px;text-align:center;}
+.ts-num{font-size:22px;font-weight:700;line-height:1;}
+.ts-lbl{font-size:10px;opacity:.8;margin-top:3px;letter-spacing:.02em;}
+
+/* ─── PROGRESS ────────────────────────────────────────── */
+.prog-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow);}
+.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.prog-label{font-size:13px;font-weight:600;color:var(--sub);}
+.prog-count{font-size:13px;font-weight:700;color:var(--accent);}
+.prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+/* ─── CATEGORY ────────────────────────────────────────── */
+.cat-block{margin-bottom:22px;}
+.cat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px;}
+.cat-head-l{display:flex;align-items:center;gap:8px;}
+.cat-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);}
+.cat-badge{background:var(--border);color:var(--sub);font-size:11px;font-weight:700;border-radius:20px;padding:2px 8px;}
+.cat-btns{display:flex;gap:2px;}
+.sm-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 5px;border-radius:6px;font-size:13px;display:flex;align-items:center;transition:color .15s,background .15s;}
+.sm-btn:hover{background:var(--border);}
+.sm-btn svg{width:13px;height:13px;}
+.add-cat-row{display:flex;align-items:center;gap:8px;border:1.5px dashed var(--border-strong);border-radius:var(--r);padding:11px 16px;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:20px;transition:border-color .2s,color .2s;background:none;width:100%;font-family:var(--font);}
+.add-cat-row:hover{border-color:var(--accent);color:var(--accent);}
+.add-task-row{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;padding:6px 2px;font-family:var(--font);margin-top:4px;}
+.add-task-row svg{width:14px;height:14px;}
+
+/* ─── TASK CARD ───────────────────────────────────────── */
+.task-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;margin-bottom:8px;display:flex;gap:11px;align-items:flex-start;transition:box-shadow .2s,border-color .2s;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.task-card:hover{box-shadow:var(--shadow);border-color:var(--border-strong);}
+.task-card.done{opacity:.42;}
+.task-card.done .task-name{text-decoration:line-through;}
+.task-card.overdue{border-left:3px solid var(--red);}
+.chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;margin-top:1px;}
+.chk:hover{border-color:var(--accent);}
+.task-card.done .chk{background:var(--green);border-color:var(--green);}
+.chk svg{width:11px;height:11px;stroke:#fff;display:none;}
+.task-card.done .chk svg{display:block;}
+.task-info{flex:1;min-width:0;cursor:pointer;}
+.task-name{font-size:15px;font-weight:500;line-height:1.35;color:var(--text);letter-spacing:-.1px;}
+.task-meta{display:flex;align-items:center;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.03em;}
+.tag-urgent{background:var(--red-bg);color:var(--red-text);}
+.tag-high{background:var(--amber-bg);color:var(--amber-text);}
+.tag-normal{background:var(--blue-bg);color:var(--blue-text);}
+.tag-low{background:var(--green-bg);color:var(--green-text);}
+.task-dt{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px;}
+.task-dt.ovd{color:var(--red-text);font-weight:600;}
+.task-dt.tod{color:var(--amber-text);font-weight:600;}
+.task-note{font-size:12px;color:var(--sub);margin-top:5px;line-height:1.5;}
+.task-src{font-size:10px;color:var(--muted);font-style:italic;padding:2px 7px;background:var(--border);border-radius:20px;}
+.task-acts{display:flex;flex-shrink:0;}
+.ta-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:3px 4px;border-radius:6px;transition:color .15s,background .15s;opacity:.4;display:flex;align-items:center;}
+.ta-btn:hover{opacity:1;}
+.ta-btn.edit-btn:hover{color:var(--accent);background:var(--accent-light);}
+.ta-btn.del-btn:hover{color:var(--red);background:var(--red-bg);}
+.ta-btn svg{width:14px;height:14px;}
+.done-toggle{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:6px 0;display:flex;align-items:center;gap:6px;font-family:var(--font);}
+.done-toggle .arr{transition:transform .2s;}
+.empty-cat{text-align:center;color:var(--muted);font-size:13px;padding:12px 0;font-style:italic;}
+
+/* ─── TODAY GROUP ─────────────────────────────────────── */
+.today-group{margin-bottom:18px;}
+.today-group-lbl{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-light);border-radius:6px;padding:3px 10px;display:inline-block;margin-bottom:8px;letter-spacing:.04em;}
+.overdue-group-lbl{font-size:11px;font-weight:700;color:var(--red-text);background:var(--red-bg);border-radius:6px;padding:3px 10px;display:inline-block;margin-bottom:8px;letter-spacing:.04em;}
+.overdue-hero{background:linear-gradient(140deg,#C0392B 0%,#E74C3C 100%);border-radius:var(--r);padding:20px 22px;margin-bottom:16px;color:#fff;box-shadow:0 4px 24px rgba(192,57,43,.3);}
+.overdue-hero h2{font-size:24px;font-weight:700;letter-spacing:-.5px;}
+.overdue-hero .date-str{font-size:13px;opacity:.8;margin-top:2px;}
+.tab.overdue-tab{color:var(--red-text);}
+.tab.overdue-tab.active{color:var(--red);border-bottom-color:var(--red);}
+.tab.overdue-tab .badge-dot{width:7px;height:7px;background:var(--red);border-radius:50%;display:inline-block;margin-left:2px;animation:pulse-dot 1.5s infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ─── NOTIF BANNER ────────────────────────────────────── */
+.notif-bar{background:var(--amber-bg);border:1px solid rgba(255,149,0,.3);border-radius:var(--r);padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+.notif-bar svg{width:18px;height:18px;color:var(--amber);flex-shrink:0;}
+.notif-bar-body{flex:1;}
+.notif-bar-title{font-size:13px;font-weight:700;color:var(--amber-text);}
+.notif-bar-sub{font-size:12px;color:var(--sub);margin-top:2px;}
+.notif-bar-btn{background:var(--amber);color:#fff;border:none;border-radius:var(--r-xs);padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font);}
+
+/* ─── SYNC VIEW ───────────────────────────────────────── */
+.sync-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:14px;box-shadow:var(--shadow);}
+.sync-card h3{font-size:15px;font-weight:700;margin-bottom:6px;letter-spacing:-.2px;}
+.sync-card p{font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:14px;}
+.code-box{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.code-val{font-size:26px;font-weight:800;letter-spacing:6px;color:var(--accent);background:var(--accent-light);padding:12px 20px;border-radius:var(--r-sm);flex:1;text-align:center;font-family:monospace;cursor:pointer;user-select:all;}
+.copy-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);padding:12px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .15s;white-space:nowrap;}
+.copy-btn:hover{background:var(--accent-dark);}
+.load-row{display:flex;gap:8px;}
+.sync-input{flex:1;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:16px;padding:11px 13px;outline:none;font-family:monospace;letter-spacing:3px;text-transform:uppercase;transition:border-color .15s;}
+.sync-input:focus{border-color:var(--accent);}
+.load-btn{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:11px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;}
+.sync-msg{font-size:12px;margin-top:8px;min-height:18px;}
+.sync-msg.ok{color:var(--green-text);}
+.sync-msg.err{color:var(--red-text);}
+.sync-msg.info{color:var(--sub);}
+.sync-divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.step-list{list-style:none;counter-reset:steps;}
+.step-list li{counter-increment:steps;font-size:13px;color:var(--sub);line-height:1.6;padding:4px 0 4px 28px;position:relative;}
+.step-list li::before{content:counter(steps);position:absolute;left:0;width:20px;height:20px;background:var(--accent-light);color:var(--accent);border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;top:5px;}
+
+/* ─── MODAL ───────────────────────────────────────────── */
+.modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;padding:20px;}
+.modal-bd.open{display:flex;animation:fadeIn .15s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{background:var(--card);border-radius:20px;padding:24px 24px 28px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto;animation:popIn .18s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(.93);}to{opacity:1;transform:scale(1);}}
+.modal h2{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:18px;}
+.lbl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:5px;letter-spacing:.02em;}
+.fi{width:100%;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:15px;padding:11px 13px;outline:none;font-family:var(--font);transition:border-color .15s;margin-bottom:14px;}
+.fi:focus{border-color:var(--accent);}
+.fi::placeholder{color:var(--muted);}
+.fi-ta{height:60px;resize:none;line-height:1.5;}
+.fi-sm{font-size:14px;padding:10px 11px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0;}
+.mbtns{display:flex;gap:8px;margin-top:4px;}
+.mbtn{flex:1;border:none;border-radius:var(--r-sm);padding:13px;font-size:15px;cursor:pointer;font-family:var(--font);font-weight:600;transition:background .15s;}
+.mbtn.cancel{background:var(--border);color:var(--sub);}
+.mbtn.cancel:hover{background:var(--border-strong);}
+.mbtn.ok{background:var(--accent);color:#fff;}
+.mbtn.ok:hover{background:var(--accent-dark);}
+.mbtn.danger{background:var(--red-bg);color:var(--red-text);}
+
+.empty-today{text-align:center;padding:60px 20px;}
+.empty-today .e-icon{font-size:48px;margin-bottom:14px;}
+.empty-today h3{font-size:17px;font-weight:700;margin-bottom:6px;letter-spacing:-.2px;}
+.empty-today p{font-size:14px;color:var(--sub);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-top">
+    <div class="brand">
+      <h1>Sheehan's Checklist</h1>
+      <p id="navDateStr"></p>
+    </div>
+    <div class="nav-icons">
+      <button class="ni" id="notifNi" onclick="handleNotif()" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="ni on" onclick="switchTab('__sync__')" title="Sync">
+        <svg id="syncIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      </button>
+      <button class="ni" onclick="openM('mNewList')" title="New checklist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="tabs-wrap">
+    <div class="tabs" id="tabBar"></div>
+    <button class="new-tab-btn" onclick="openM('mNewList')" title="New checklist">+</button>
+  </div>
+</nav>
+
+<div id="offlineBar" style="display:none;background:#FF9500;color:#fff;font-size:13px;font-weight:600;padding:8px 20px;align-items:center;gap:8px;justify-content:center;position:sticky;top:0;z-index:199;">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+  You're offline — changes are saved locally and will sync when you reconnect.
+</div>
+<div id="viewRoot"></div>
+
+<!-- Static special views -->
+<div class="view" id="view-__today__"></div>
+<div class="view" id="view-__overdue__"></div>
+<div class="view" id="view-__sync__">
+  <div style="max-width:680px;margin:0 auto;padding:20px 0 120px;">
+    <div class="sync-card">
+      <h3>☁️ Firebase sync is active</h3>
+      <p>Your checklist is saved to Firebase in real time. Any device that opens this file will automatically load the latest data — no code needed.</p>
+      <div class="sync-msg info" id="lastSyncMsg" style="font-size:13px;margin-top:4px;">Checking connection…</div>
+    </div>
+
+    <div class="sync-card">
+      <h3>📲 Share to another device</h3>
+      <p>Send this HTML file to your other device (email it, AirDrop it, save to Google Drive). When you open it, your data loads automatically from Firebase.</p>
+      <button class="copy-btn" style="width:100%;padding:13px;font-size:14px;" onclick="manualPush()">☁️ Push data to cloud now</button>
+      <div class="sync-msg" id="pushMsg" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="sync-card">
+      <h3>ℹ️ How it works</h3>
+      <ol class="step-list">
+        <li>Every change you make is instantly saved to <strong>Firebase</strong>.</li>
+        <li>Open this same HTML file on any device.</li>
+        <li>It automatically loads your latest data from the cloud.</li>
+        <li>Changes on any device sync back immediately.</li>
+      </ol>
+      <div class="sync-divider"></div>
+      <div class="sync-msg info" id="lastSyncMsg2" style="font-size:12px;color:var(--muted);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODALS ───────────────────────────────────────────── -->
+<div class="modal-bd" id="mNewList" onclick="if(event.target===this)closeM('mNewList')">
+  <div class="modal">
+    <h2>New checklist</h2>
+    <label class="lbl">Name</label>
+    <input class="fi" id="inNewList" placeholder="e.g. Errands, Health, Finances…" maxlength="30" onkeydown="if(event.key==='Enter')doCreateList()">
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeM('mNewList')">Cancel</button><button class="mbtn ok" onclick="doCreateList()">Create</button></div>
+  </div>
+</div>
+
+<div class="modal-bd" id="mEditList" onclick="if(event.target===this)closeM('mEditList')">
+  <div class="modal">
+    <h2>Rename checklist</h2>
+    <label class="lbl">Name</label>
+    <input class="fi" id="inEditList" placeholder="Checklist name" maxlength="30" onkeydown="if(event.key==='Enter')doEditList()">
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeM('mEditList')">Cancel</button><button class="mbtn ok" onclick="doEditList()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-bd" id="mNewCat" onclick="if(event.target===this)closeM('mNewCat')">
+  <div class="modal">
+    <h2>New category</h2>
+    <label class="lbl">Category name</label>
+    <input class="fi" id="inNewCat" placeholder="e.g. This week, Errands, Health…" maxlength="30" onkeydown="if(event.key==='Enter')doCreateCat()">
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeM('mNewCat')">Cancel</button><button class="mbtn ok" onclick="doCreateCat()">Add</button></div>
+  </div>
+</div>
+
+<div class="modal-bd" id="mEditCat" onclick="if(event.target===this)closeM('mEditCat')">
+  <div class="modal">
+    <h2>Rename category</h2>
+    <label class="lbl">Category name</label>
+    <input class="fi" id="inEditCat" placeholder="Category name" maxlength="30" onkeydown="if(event.key==='Enter')doEditCat()">
+    <div class="mbtns"><button class="mbtn cancel" onclick="closeM('mEditCat')">Cancel</button><button class="mbtn ok" onclick="doEditCat()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-bd" id="mAddTask" onclick="if(event.target===this)closeM('mAddTask')">
+  <div class="modal">
+    <h2 id="mAddTaskTitle">Add task</h2>
+    <label class="lbl">Task name</label>
+    <input class="fi" id="inTaskName" placeholder="What needs to be done?">
+    <label class="lbl">Note <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <textarea class="fi fi-ta" id="inTaskNote" placeholder="Add a note…"></textarea>
+    <label class="lbl">Category</label>
+    <select class="fi fi-sm" id="inTaskCat" style="margin-bottom:14px;"></select>
+    <div class="grid3">
+      <div><label class="lbl">Priority</label>
+        <select class="fi fi-sm" id="inTaskPri" style="margin-bottom:0;">
+          <option value="urgent">🔴 Urgent</option>
+          <option value="high" selected>🟠 High</option>
+          <option value="normal">🔵 Normal</option>
+          <option value="low">🟢 Low</option>
+        </select>
+      </div>
+      <div><label class="lbl">Date</label><input class="fi fi-sm" type="date" id="inTaskDate" style="margin-bottom:0;"></div>
+      <div><label class="lbl">Time</label><input class="fi fi-sm" type="time" id="inTaskTime" style="margin-bottom:0;"></div>
+    </div>
+    <div style="margin-top:14px;" class="mbtns"><button class="mbtn cancel" onclick="closeM('mAddTask')">Cancel</button><button class="mbtn ok" onclick="doAddTask()">Add task</button></div>
+  </div>
+</div>
+
+<div class="modal-bd" id="mEditTask" onclick="if(event.target===this)closeM('mEditTask')">
+  <div class="modal">
+    <h2>Edit task</h2>
+    <label class="lbl">Task name</label>
+    <input class="fi" id="inEditName" placeholder="Task name">
+    <label class="lbl">Note</label>
+    <textarea class="fi fi-ta" id="inEditNote" placeholder="Add a note…"></textarea>
+    <label class="lbl">Category</label>
+    <select class="fi fi-sm" id="inEditCat" style="margin-bottom:14px;"></select>
+    <div class="grid3">
+      <div><label class="lbl">Priority</label>
+        <select class="fi fi-sm" id="inEditPri" style="margin-bottom:0;">
+          <option value="urgent">🔴 Urgent</option>
+          <option value="high">🟠 High</option>
+          <option value="normal">🔵 Normal</option>
+          <option value="low">🟢 Low</option>
+        </select>
+      </div>
+      <div><label class="lbl">Date</label><input class="fi fi-sm" type="date" id="inEditDate" style="margin-bottom:0;"></div>
+      <div><label class="lbl">Time</label><input class="fi fi-sm" type="time" id="inEditTime" style="margin-bottom:0;"></div>
+    </div>
+    <div style="margin-top:14px;" class="mbtns">
+      <button class="mbtn danger" onclick="doDeleteFromEdit()">Delete</button>
+      <button class="mbtn cancel" onclick="closeM('mEditTask')">Cancel</button>
+      <button class="mbtn ok" onclick="doSaveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const pad = n => String(n).padStart(2,'0');
+function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+const isToday = s => s === todayStr();
+const isPast  = s => !!s && s < todayStr();
+function fmtDate(s){ if(!s)return''; const [,m,d]=s.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+parseInt(d); }
+function fmtTime(t){ if(!t)return''; const [h,m]=t.split(':'); const hr=+h; return (hr%12||12)+':'+m+(hr<12?'am':'pm'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+const priMeta={urgent:{l:'Urgent',c:'tag-urgent'},high:{l:'High',c:'tag-high'},normal:{l:'Normal',c:'tag-normal'},low:{l:'Low',c:'tag-low'}};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const STORE_KEY = 'sheehan_v2';
+let lists=[], cats={}, tasks={}, nextId=200, nextListId=20;
+let lastSyncTime='';
+let activeTab='__today__';
+let _editListId='', _editCatLid='', _editCatOld='', _editTaskId='', _editTaskLid='';
+let _addTaskLid='', _addTaskCat='';
+let notifTimers={};
+
+const defLists=[{id:'move',label:'Moving prep'},{id:'personal',label:'Personal'},{id:'work',label:'Work'}];
+const defCats={move:['Packing','Selling','Buying'],personal:['Errands','Social','Shopping'],work:['Daily']};
+function defTasks(){ return {
+  move:[
+    {id:1,name:'Buy moving boxes',note:'~10–15 boxes. Check Shopee or hardware store.',priority:'urgent',cat:'Buying',date:todayStr(),time:'',done:false},
+    {id:2,name:'Declutter — decide what to keep',note:'Room by room: keep, sell, or toss.',priority:'high',cat:'Packing',date:'',time:'',done:false},
+    {id:3,name:'List items to sell',note:'Post on Facebook Marketplace or Carousell.',priority:'high',cat:'Selling',date:'',time:'',done:false},
+    {id:4,name:'Pack up the house',note:'Start with rarely-used items. Label every box.',priority:'normal',cat:'Packing',date:'',time:'',done:false},
+    {id:5,name:'Finish selling items',note:'Complete all sales before moving week.',priority:'normal',cat:'Selling',date:'',time:'',done:false},
+  ],
+  personal:[
+    {id:6,name:'Do laundry',note:'',priority:'urgent',cat:'Errands',date:todayStr(),time:'',done:false},
+    {id:7,name:'Buy acne meds',note:'',priority:'high',cat:'Shopping',date:todayStr(),time:'',done:false},
+    {id:8,name:'Schedule hangouts with friends',note:'Lock in dates before July.',priority:'high',cat:'Social',date:'',time:'',done:false},
+    {id:9,name:'Buy a bike',note:'Order online; deliver to new place.',priority:'normal',cat:'Shopping',date:'',time:'',done:false},
+  ],
+  work:[
+    {id:10,name:'Work shift (Mon–Fri)',note:'7:00am–11:30am. Block every morning.',priority:'urgent',cat:'Daily',date:todayStr(),time:'07:00',done:false},
+  ],
+};}
+
+// ═══════════════════════════════════════════════════════
+// PERSISTENCE  (localStorage)
+// ═══════════════════════════════════════════════════════
+function loadLocal(){
+  try{
+    const s=localStorage.getItem(STORE_KEY);
+    if(s){
+      const d=JSON.parse(s);
+      lists=d.lists; cats=d.cats; tasks=d.tasks;
+      nextId=d.nextId||200; nextListId=d.nextListId||20;
+      lastSyncTime=d.lastSyncTime||'';
+    } else {
+      lists=JSON.parse(JSON.stringify(defLists));
+      cats=JSON.parse(JSON.stringify(defCats));
+      tasks=defTasks();
+    }
+  } catch(e){
+    lists=JSON.parse(JSON.stringify(defLists));
+    cats=JSON.parse(JSON.stringify(defCats));
+    tasks=defTasks();
+  }
+
+}
+
+function payload(){ return {lists,cats,tasks,nextId,nextListId,lastSyncTime}; }
+
+function saveLocal(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(payload())); } catch(e){}
+}
+
+function save(){
+  saveLocal();
+  cloudPush();
+  reScheduleNotifs();
+}
+
+// ═══════════════════════════════════════════════════════
+// OFFLINE / ONLINE DETECTION
+// ═══════════════════════════════════════════════════════
+let _pendingPush = false;
+
+function updateOnlineStatus(){
+  const online = navigator.onLine;
+  const bar = document.getElementById('offlineBar');
+  if(bar) bar.style.display = online ? 'none' : 'flex';
+  if(online && _pendingPush){
+    _pendingPush = false;
+    cloudPush();
+  }
+}
+
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+// No SDK needed. Uses plain fetch() to read/write JSON.
+// Database URL: https://sheehan-checklist-default-rtdb.firebaseio.com/
+// Rules must be: { "rules": { ".read": true, ".write": true } }
+// ═══════════════════════════════════════════════════════
+const FB_URL = 'https://sheehan-checklist-default-rtdb.firebaseio.com/checklist.json';
+let _pushing = false;
+
+function setMsg(el, text, cls){ if(!el) return; el.textContent=text; el.className='sync-msg '+cls; }
+
+function setSyncStatus(text, cls){
+  ['lastSyncMsg','lastSyncMsg2'].forEach(id=>{
+    const el=document.getElementById(id); if(el) setMsg(el,text,cls);
+  });
+}
+
+async function cloudPush(){
+  if(_pushing) return;
+  if(!navigator.onLine){
+    _pendingPush = true;
+    setSyncStatus('📴 Offline — changes saved locally, will sync when back online.','info');
+    return;
+  }
+  _pushing = true;
+  setSyncStatus('☁️ Saving to Firebase…','info');
+  try{
+    lastSyncTime = new Date().toISOString();
+    const r = await fetch(FB_URL, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload())
+    });
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    saveLocal();
+    setSyncStatus('✅ Synced to Firebase — '+new Date(lastSyncTime).toLocaleTimeString(),'ok');
+  } catch(e){
+    setSyncStatus('⚠️ Firebase unreachable — saved locally. Check your DB rules or internet.','err');
+    console.warn('Firebase push failed:',e);
+  } finally { _pushing=false; }
+}
+
+async function cloudPull(){
+  setSyncStatus('⬇️ Loading from Firebase…','info');
+  try{
+    const r = await fetch(FB_URL);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    if(!d || !d.lists){ setSyncStatus('ℹ️ No cloud data yet — using local data.','info'); return false; }
+    // Only apply if cloud data is newer
+    const cloudTime = d.lastSyncTime ? new Date(d.lastSyncTime).getTime() : 0;
+    const localTime = lastSyncTime   ? new Date(lastSyncTime).getTime()   : 0;
+    if(cloudTime > localTime){
+      applyPayload(d);
+      setSyncStatus('✅ Loaded latest data from Firebase — '+new Date(d.lastSyncTime).toLocaleTimeString(),'ok');
+      return true;
+    } else {
+      setSyncStatus('✅ Local data is up to date.','ok');
+      return false;
+    }
+  } catch(e){
+    setSyncStatus('⚠️ Could not reach Firebase. Working offline.','err');
+    console.warn('Firebase pull failed:',e);
+    return false;
+  }
+}
+
+function applyPayload(d){
+  lists      = d.lists      || lists;
+  cats       = d.cats       || cats;
+  tasks      = d.tasks      || tasks;
+  nextId     = d.nextId     || nextId;
+  nextListId = d.nextListId || nextListId;
+  lastSyncTime = d.lastSyncTime || '';
+  saveLocal();
+  renderAll();
+}
+
+async function manualPush(){
+  const el = document.getElementById('pushMsg');
+  setMsg(el,'Pushing…','info');
+  await cloudPush();
+  setMsg(el, document.getElementById('lastSyncMsg')?.textContent||'','ok');
+}
+
+function initSyncView(){
+  if(lastSyncTime){
+    setSyncStatus('✅ Last synced: '+new Date(lastSyncTime).toLocaleString(),'ok');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════════════════
+function updateNotifBtn(){
+  const btn = document.getElementById('notifNi');
+  if(!btn) return;
+  const granted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+  btn.classList.toggle('on', granted);
+  btn.title = granted ? 'Notifications ON' : 'Enable notifications';
+}
+
+function handleNotif(){
+  if(typeof Notification === 'undefined'){
+    alert('Notifications are not supported in this browser.\nTry Chrome or Firefox on desktop, or Chrome on Android.');
+    return;
+  }
+  if(Notification.permission === 'granted'){
+    reScheduleNotifs();
+    new Notification("Sheehan's Checklist ✅", {
+      body:"Notifications are ON! You'll get reminders before due tasks and a morning digest at 8am.",
+      icon:'https://em-content.zobj.net/source/apple/354/white-check-mark_2705.png'
+    });
+    return;
+  }
+  if(Notification.permission === 'denied'){
+    alert('Notifications are blocked by your browser.\n\nTo fix this:\n• Chrome desktop: Click the 🔒 lock icon in the address bar → Notifications → Allow\n• Chrome Android: Settings → Site Settings → Notifications → find this page → Allow\n• Firefox: Click the 🔒 icon → Permissions → Notifications → Allow\n• Safari Mac: Safari menu → Preferences → Websites → Notifications → Allow');
+    return;
+  }
+  // 'default' — not yet asked
+  Notification.requestPermission().then(p => {
+    updateNotifBtn();
+    if(p === 'granted'){
+      reScheduleNotifs();
+      setTimeout(()=>{
+        new Notification("Sheehan's Checklist 🎉", {
+          body:"Notifications enabled! You'll be reminded 1 hour and 30 minutes before due tasks, and get a morning digest at 8am."
+        });
+      }, 600);
+    } else {
+      alert('Notification permission was not granted. You can change this in your browser settings anytime.');
+    }
+  });
+}
+
+function reScheduleNotifs(){
+  // Cancel all existing timers
+  Object.values(notifTimers).forEach(clearTimeout);
+  notifTimers = {};
+  if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
+  const now = Date.now();
+  lists.forEach(l => {
+    (tasks[l.id]||[]).filter(t => !t.done && t.date && t.time).forEach(t => {
+      const due = new Date(`${t.date}T${t.time}`).getTime();
+      if(isNaN(due) || due <= now) return;
+
+      const fire = (ms, label) => {
+        if(ms > 500){
+          notifTimers[`${t.id}_${label}`] = setTimeout(() => {
+            new Notification("Sheehan's Checklist", {
+              body: `⏰ "${t.name}" is due ${label}`,
+              tag: `task-${t.id}-${label}`,
+              icon: 'https://em-content.zobj.net/source/apple/354/white-check-mark_2705.png',
+              requireInteraction: true
+            });
+          }, ms);
+        }
+      };
+
+      fire(due - now - 60*60*1000, 'in 1 hour');
+      fire(due - now - 30*60*1000, 'in 30 minutes');
+      fire(due - now - 5*60*1000,  'in 5 minutes');
+    });
+  });
+
+  // Morning digest at 8am today if not yet passed
+  const todayDate = new Date();
+  const morning = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate(), 8, 0, 0).getTime();
+  const msToMorning = morning - now;
+  if(msToMorning > 0){
+    notifTimers['morning'] = setTimeout(() => {
+      const pending = lists.flatMap(l => (tasks[l.id]||[]).filter(t => !t.done && (isToday(t.date)||isPast(t.date))));
+      if(pending.length > 0){
+        const top = [...pending].sort((a,b)=>({urgent:0,high:1,normal:2,low:3}[a.priority]-{urgent:0,high:1,normal:2,low:3}[b.priority]))[0];
+        new Notification("Good morning, Sheehan! ☀️", {
+          body: `You have ${pending.length} task${pending.length>1?'s':''} today. Priority: "${top.name}"`,
+          icon: 'https://em-content.zobj.net/source/apple/354/white-check-mark_2705.png',
+          requireInteraction: false
+        });
+      }
+    }, msToMorning);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
+const PROTECTED = ['move','personal','work'];
+
+function renderTabs(){
+  // Count overdue tasks for the badge dot
+  const overdueCount = lists.reduce((n,l)=> n + (tasks[l.id]||[]).filter(t=>!t.done && isPast(t.date)).length, 0);
+  const all = [{id:'__today__',label:'Today'}, {id:'__overdue__',label:'Overdue'}, ...lists, {id:'__sync__',label:'Sync ☁️'}];
+  document.getElementById('tabBar').innerHTML = all.map(l => {
+    const isOverdue = l.id === '__overdue__';
+    const custom = !PROTECTED.includes(l.id) && !['__today__','__overdue__','__sync__'].includes(l.id);
+    const editIcon = (!['__today__','__overdue__','__sync__'].includes(l.id))
+      ? `<svg class="tab-edit-icon" onclick="event.stopPropagation();doOpenEditList('${l.id}')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>` : '';
+    const delIcon = custom ? `<span class="tab-del" onclick="event.stopPropagation();doDeleteList('${l.id}')">×</span>` : '';
+    const dot = (isOverdue && overdueCount > 0) ? `<span class="badge-dot"></span>` : '';
+    return `<button class="tab${activeTab===l.id?' active':''}${isOverdue?' overdue-tab':''}" onclick="switchTab('${l.id}')">${esc(l.label)}${dot}${editIcon}${delIcon}</button>`;
+  }).join('');
+}
+
+function switchTab(id){
+  activeTab = id;
+  renderTabs();
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  if(id === '__today__'){
+    renderTodayView();
+    document.getElementById('view-__today__').classList.add('active');
+  } else if(id === '__overdue__'){
+    renderOverdueView();
+    document.getElementById('view-__overdue__').classList.add('active');
+  } else if(id === '__sync__'){
+    document.getElementById('view-__sync__').classList.add('active');
+    initSyncView();
+  } else {
+    renderListView(id);
+    const v = document.getElementById('view-'+id);
+    if(v) v.classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// VIEWS
+// ═══════════════════════════════════════════════════════
+function rebuildViewDivs(){
+  document.getElementById('viewRoot').innerHTML = lists.map(l => `<div class="view" id="view-${l.id}"></div>`).join('');
+}
+
+function renderAll(){
+  rebuildViewDivs();
+  renderTabs();
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  if(activeTab === '__today__'){
+    renderTodayView();
+    document.getElementById('view-__today__').classList.add('active');
+  } else if(activeTab === '__overdue__'){
+    renderOverdueView();
+    document.getElementById('view-__overdue__').classList.add('active');
+  } else if(activeTab === '__sync__'){
+    document.getElementById('view-__sync__').classList.add('active');
+    initSyncView();
+  } else {
+    const v = document.getElementById('view-'+activeTab);
+    if(v){ renderListView(activeTab); v.classList.add('active'); }
+    else { activeTab='__today__'; renderTodayView(); document.getElementById('view-__today__').classList.add('active'); }
+  }
+}
+
+// ─── TODAY ─────────────────────────────────────────────
+function renderTodayView(){
+  const el = document.getElementById('view-__today__');
+  const pending=[], doneArr=[];
+  lists.forEach(l => {
+    (tasks[l.id]||[]).forEach(t => {
+      if(!t.done && isToday(t.date)) pending.push({t,lid:l.id,label:l.label});
+      if(t.done  && isToday(t.date)) doneArr.push({t,lid:l.id,label:l.label});
+    });
+  });
+  const urgent   = pending.filter(x=>x.t.priority==='urgent').length;
+  const overdueCount = lists.reduce((n,l)=> n + (tasks[l.id]||[]).filter(t=>!t.done && isPast(t.date)).length, 0);
+  const notifOk  = typeof Notification!=='undefined' && Notification.permission==='granted';
+  const d = new Date();
+  const dateLabel = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+', '
+    +['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]
+    +' '+d.getDate()+', '+d.getFullYear();
+
+  let h = '';
+
+  if(!notifOk) h += `<div class="notif-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <div class="notif-bar-body"><div class="notif-bar-title">Enable notifications</div><div class="notif-bar-sub">Get a morning digest + reminders 1 hr and 30 min before due tasks.</div></div>
+    <button class="notif-bar-btn" onclick="handleNotif()">Allow</button>
+  </div>`;
+
+  h += `<div class="today-hero">
+    <h2>Today</h2>
+    <div class="date-str">${dateLabel}</div>
+    <div class="today-stats">
+      <div class="ts"><div class="ts-num">${pending.length}</div><div class="ts-lbl">PENDING</div></div>
+      <div class="ts"><div class="ts-num">${urgent}</div><div class="ts-lbl">URGENT</div></div>
+      <div class="ts"><div class="ts-num">${doneArr.length}</div><div class="ts-lbl">DONE</div></div>
+    </div>
+  </div>`;
+
+  if(overdueCount > 0){
+    h += `<div style="background:var(--red-bg);border:1px solid rgba(255,59,48,.25);border-radius:var(--r);padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="switchTab('__overdue__')">
+      <span style="font-size:20px;">⚠️</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:var(--red-text);">${overdueCount} overdue task${overdueCount>1?'s':''} from previous days</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:2px;">Tap to view and clear them →</div>
+      </div>
+    </div>`;
+
+  }
+
+  if(pending.length===0 && doneArr.length===0){
+    h += `<div class="empty-today"><div class="e-icon">✅</div><h3>All clear for today!</h3><p>No tasks due today. Assign today's date to a task and it'll appear here automatically.</p></div>`;
+  } else {
+    const grouped={};
+    pending.forEach(x=>{if(!grouped[x.lid])grouped[x.lid]={label:x.label,items:[]};grouped[x.lid].items.push(x);});
+    Object.values(grouped).forEach(g=>{
+      h+=`<div class="today-group"><div class="today-group-lbl">${esc(g.label)}</div>`;
+      g.items.forEach(x=>h+=todayTaskHTML(x.t,x.lid));
+      h+=`</div>`;
+    });
+    if(doneArr.length){
+      h+=`<button class="done-toggle" onclick="toggleDoneSection(this)"><svg class="arr" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2,4 6,8 10,4"/></svg>${doneArr.length} completed today</button>
+      <div style="display:none">`;
+      doneArr.forEach(x=>h+=todayTaskHTML(x.t,x.lid));
+      h+=`</div>`;
+    }
+  }
+  el.innerHTML = `<div style="max-width:680px;margin:0 auto;padding:20px 0 120px;">${h}</div>`;
+}
+
+// ─── OVERDUE VIEW ──────────────────────────────────────
+function renderOverdueView(){
+  const el = document.getElementById('view-__overdue__');
+  const overdue=[], doneArr=[];
+  lists.forEach(l => {
+    (tasks[l.id]||[]).forEach(t => {
+      if(!t.done && isPast(t.date)) overdue.push({t,lid:l.id,label:l.label});
+      if(t.done  && isPast(t.date)) doneArr.push({t,lid:l.id,label:l.label});
+    });
+  });
+
+  const priOrder={urgent:0,high:1,normal:2,low:3};
+  overdue.sort((a,b)=>{
+    // Sort by date ascending (oldest first), then priority
+    if(a.t.date !== b.t.date) return a.t.date < b.t.date ? -1 : 1;
+    return (priOrder[a.t.priority]||2)-(priOrder[b.t.priority]||2);
+  });
+
+  let h = `<div class="overdue-hero">
+    <h2>⚠️ Overdue</h2>
+    <div class="date-str">${overdue.length} unfinished task${overdue.length!==1?'s':''} from previous days</div>
+  </div>`;
+
+  if(overdue.length===0 && doneArr.length===0){
+    h+=`<div class="empty-today"><div class="e-icon">🎉</div><h3>No overdue tasks!</h3><p>You're all caught up. Keep it up!</p></div>`;
+  } else {
+    if(overdue.length > 0){
+      // Group by date
+      const byDate={};
+      overdue.forEach(x=>{
+        const dk = x.t.date||'no-date';
+        if(!byDate[dk]) byDate[dk]={date:x.t.date,items:[]};
+        byDate[dk].items.push(x);
+      });
+      Object.values(byDate).forEach(g=>{
+        const dateLabel = g.date ? fmtDate(g.date) : 'No date';
+        h+=`<div class="today-group">
+          <div class="overdue-group-lbl">📅 ${dateLabel}</div>`;
+        g.items.forEach(x=>h+=overdueTaskHTML(x.t,x.lid,x.label));
+        h+=`</div>`;
+      });
+    }
+    if(doneArr.length){
+      h+=`<button class="done-toggle" onclick="toggleDoneSection(this)">
+        <svg class="arr" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2,4 6,8 10,4"/></svg>
+        ${doneArr.length} completed (previously overdue)
+      </button><div style="display:none">`;
+      doneArr.forEach(x=>h+=overdueTaskHTML(x.t,x.lid,x.label));
+      h+=`</div>`;
+    }
+  }
+  el.innerHTML=`<div style="max-width:680px;margin:0 auto;padding:20px 0 120px;">${h}</div>`;
+}
+
+function overdueTaskHTML(t, lid, listLabel){
+  const p  = priMeta[t.priority]||priMeta.normal;
+  return `<div class="task-card${t.done?' done':''} overdue" style="${t.done?'':'border-left:3px solid var(--red);'}">
+    <div class="chk" onclick="toggleTaskRefreshBoth(${t.id},'${lid}')"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.5"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
+    <div class="task-info">
+      <div class="task-name">${esc(t.name)}</div>
+      <div class="task-meta">
+        <span class="tag ${p.c}">${p.l}</span>
+        <span class="task-src">${esc(listLabel)}</span>
+        ${t.cat?`<span class="task-src">${esc(t.cat)}</span>`:''}
+        ${t.time?`<span class="task-dt">${fmtTime(t.time)}</span>`:''}
+        <span class="task-dt ovd">Overdue: ${fmtDate(t.date)}</span>
+      </div>
+      ${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}
+    </div>
+    <div class="task-acts">
+      <button class="ta-btn edit-btn" onclick="openEditTask(${t.id},'${lid}')" title="Edit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="ta-btn del-btn" onclick="doDeleteTask(${t.id},'${lid}');renderOverdueView();renderTabs();" title="Delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function toggleTaskRefreshBoth(id, lid){
+  const t=(tasks[lid]||[]).find(t=>t.id===id); if(!t)return;
+  t.done=!t.done; save(); renderOverdueView(); renderListView(lid); renderTabs();
+}
+
+// ─── LIST VIEW ─────────────────────────────────────────
+function renderListView(lid){
+  const el = document.getElementById('view-'+lid); if(!el) return;
+  const label = lists.find(l=>l.id===lid)?.label||lid;
+  const allT = tasks[lid]||[];
+  const done  = allT.filter(t=>t.done).length;
+  const total = allT.length;
+  const pct   = total ? Math.round(done/total*100) : 0;
+
+  let h = `<div style="max-width:680px;margin:0 auto;">
+    <div class="prog-card">
+      <div class="prog-row"><span class="prog-label">${esc(label)}</span><span class="prog-count">${done} / ${total}</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>`;
+
+  (cats[lid]||[]).forEach(cat => {
+    const catT   = allT.filter(t=>t.cat===cat);
+    const pend   = catT.filter(t=>!t.done);
+    const doneT  = catT.filter(t=>t.done);
+    h += `<div class="cat-block">
+      <div class="cat-head">
+        <div class="cat-head-l">
+          <span class="cat-title">${esc(cat)}</span>
+          <span class="cat-badge">${pend.length}</span>
+        </div>
+        <div class="cat-btns">
+          <button class="sm-btn" onclick="doOpenEditCat('${lid}','${esc(cat)}')" title="Rename">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="sm-btn" onclick="doDeleteCat('${lid}','${esc(cat)}')" title="Delete" style="color:var(--muted);">×</button>
+        </div>
+      </div>`;
+    if(pend.length===0 && doneT.length===0) h+=`<div class="empty-cat">No tasks yet.</div>`;
+    pend.forEach(t  => h+=taskCardHTML(t,lid));
+    if(doneT.length){
+      h+=`<button class="done-toggle" onclick="toggleDoneSection(this)"><svg class="arr" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2,4 6,8 10,4"/></svg>${doneT.length} done</button>
+      <div style="display:none">`;
+      doneT.forEach(t=>h+=taskCardHTML(t,lid));
+      h+=`</div>`;
+    }
+    h+=`<button class="add-task-row" onclick="openAddTask('${lid}','${esc(cat)}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add task
+    </button></div>`;
+  });
+
+  h+=`<button class="add-cat-row" onclick="openNewCat('${lid}')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add category
+  </button></div>`;
+  el.innerHTML = h;
+}
+
+// ─── TASK CARD HTML ────────────────────────────────────
+function taskCardHTML(t, lid){
+  const p  = priMeta[t.priority]||priMeta.normal;
+  const ov = isPast(t.date) && !t.done;
+  const tod= isToday(t.date) && !t.done;
+  let dtH  = '';
+  if(t.date){
+    const lbl = ov?'Overdue: '+fmtDate(t.date) : tod?'Today' : fmtDate(t.date);
+    dtH=`<span class="task-dt${ov?' ovd':tod?' tod':''}">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      ${lbl}${t.time?' · '+fmtTime(t.time):''}
+    </span>`;
+  }
+  return `<div class="task-card${t.done?' done':''}${ov?' overdue':''}">
+    <div class="chk" onclick="toggleTask(${t.id},'${lid}')"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.5"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
+    <div class="task-info" onclick="toggleTask(${t.id},'${lid}')">
+      <div class="task-name">${esc(t.name)}</div>
+      <div class="task-meta">
+        <span class="tag ${p.c}">${p.l}</span>
+        ${tod?'<span class="tag" style="background:var(--amber-bg);color:var(--amber-text);">Today</span>':''}
+        ${dtH}
+      </div>
+      ${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}
+    </div>
+    <div class="task-acts">
+      <button class="ta-btn edit-btn" onclick="openEditTask(${t.id},'${lid}')" title="Edit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="ta-btn del-btn" onclick="doDeleteTask(${t.id},'${lid}')" title="Delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function todayTaskHTML(t, lid){
+  const p  = priMeta[t.priority]||priMeta.normal;
+  const ov = isPast(t.date) && !t.done;
+  return `<div class="task-card${t.done?' done':''}${ov?' overdue':''}">
+    <div class="chk" onclick="toggleTaskToday(${t.id},'${lid}')"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.5"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
+    <div class="task-info">
+      <div class="task-name">${esc(t.name)}</div>
+      <div class="task-meta">
+        <span class="tag ${p.c}">${p.l}</span>
+        ${t.cat?`<span class="task-src">${esc(t.cat)}</span>`:''}
+        ${t.time?`<span class="task-dt">${fmtTime(t.time)}</span>`:''}
+        ${ov?`<span class="task-dt ovd">Overdue</span>`:''}
+      </div>
+      ${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}
+    </div>
+    <div class="task-acts">
+      <button class="ta-btn edit-btn" onclick="openEditTask(${t.id},'${lid}')" title="Edit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="ta-btn del-btn" onclick="doDeleteTask(${t.id},'${lid}');renderTodayView()" title="Delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// TASK ACTIONS
+// ═══════════════════════════════════════════════════════
+function findTask(id){ for(const l of lists){const t=(tasks[l.id]||[]).find(t=>t.id===id);if(t)return{t,lid:l.id};}return null; }
+
+function toggleTask(id, lid){
+  const t=(tasks[lid]||[]).find(t=>t.id===id); if(!t)return;
+  t.done=!t.done; save(); renderListView(lid);
+}
+function toggleTaskToday(id, lid){
+  const t=(tasks[lid]||[]).find(t=>t.id===id); if(!t)return;
+  t.done=!t.done; save(); renderTodayView(); renderListView(lid); renderTabs();
+}
+function doDeleteTask(id, lid){
+  tasks[lid]=(tasks[lid]||[]).filter(t=>t.id!==id); save(); renderListView(lid);
+}
+
+function openAddTask(lid, cat){
+  _addTaskLid=lid; _addTaskCat=cat;
+  document.getElementById('mAddTaskTitle').textContent='Add task — '+cat;
+  document.getElementById('inTaskCat').innerHTML=(cats[lid]||[]).map(c=>`<option value="${esc(c)}"${c===cat?' selected':''}>${esc(c)}</option>`).join('');
+  document.getElementById('inTaskName').value='';
+  document.getElementById('inTaskNote').value='';
+  document.getElementById('inTaskPri').value='high';
+  document.getElementById('inTaskDate').value='';
+  document.getElementById('inTaskTime').value='';
+  openM('mAddTask');
+  setTimeout(()=>document.getElementById('inTaskName').focus(),120);
+}
+function doAddTask(){
+  const name=document.getElementById('inTaskName').value.trim(); if(!name)return;
+  const lid=_addTaskLid;
+  if(!tasks[lid]) tasks[lid]=[];
+  tasks[lid].push({id:nextId++,name,note:document.getElementById('inTaskNote').value.trim(),priority:document.getElementById('inTaskPri').value,cat:document.getElementById('inTaskCat').value,date:document.getElementById('inTaskDate').value,time:document.getElementById('inTaskTime').value,done:false});
+  save(); closeM('mAddTask'); renderListView(lid); renderTabs();
+  if(activeTab==='__today__') renderTodayView();
+  if(activeTab==='__overdue__') renderOverdueView();
+}
+
+function openEditTask(id, lid){
+  const f=findTask(id); if(!f)return;
+  _editTaskId=id; _editTaskLid=lid;
+  const t=f.t;
+  document.getElementById('inEditName').value=t.name;
+  document.getElementById('inEditNote').value=t.note||'';
+  document.getElementById('inEditPri').value=t.priority;
+  document.getElementById('inEditDate').value=t.date||'';
+  document.getElementById('inEditTime').value=t.time||'';
+  document.getElementById('inEditCat').innerHTML=(cats[lid]||[]).map(c=>`<option value="${esc(c)}"${c===t.cat?' selected':''}>${esc(c)}</option>`).join('');
+  openM('mEditTask');
+  setTimeout(()=>document.getElementById('inEditName').focus(),120);
+}
+function doSaveEdit(){
+  const f=findTask(_editTaskId); if(!f)return;
+  const t=f.t;
+  const name=document.getElementById('inEditName').value.trim();
+  if(name) t.name=name;
+  t.note=document.getElementById('inEditNote').value.trim();
+  t.priority=document.getElementById('inEditPri').value;
+  t.cat=document.getElementById('inEditCat').value;
+  t.date=document.getElementById('inEditDate').value;
+  t.time=document.getElementById('inEditTime').value;
+  save(); closeM('mEditTask'); renderListView(_editTaskLid); renderTabs();
+  if(activeTab==='__today__') renderTodayView();
+  if(activeTab==='__overdue__') renderOverdueView();
+}
+function doDeleteFromEdit(){
+  doDeleteTask(_editTaskId,_editTaskLid); closeM('mEditTask'); renderTabs();
+  if(activeTab==='__today__') renderTodayView();
+  if(activeTab==='__overdue__') renderOverdueView();
+}
+
+// ═══════════════════════════════════════════════════════
+// LIST / CAT ACTIONS
+// ═══════════════════════════════════════════════════════
+function doCreateList(){
+  const name=document.getElementById('inNewList').value.trim(); if(!name)return;
+  const id='l'+(nextListId++);
+  lists.push({id,label:name}); cats[id]=['General']; tasks[id]=[];
+  save(); closeM('mNewList'); document.getElementById('inNewList').value='';
+  rebuildViewDivs(); renderTabs(); switchTab(id);
+}
+function doOpenEditList(lid){
+  _editListId=lid;
+  document.getElementById('inEditList').value=lists.find(l=>l.id===lid)?.label||'';
+  openM('mEditList');
+  setTimeout(()=>document.getElementById('inEditList').focus(),120);
+}
+function doEditList(){
+  const name=document.getElementById('inEditList').value.trim(); if(!name)return;
+  const l=lists.find(l=>l.id===_editListId); if(l)l.label=name;
+  save(); closeM('mEditList'); renderAll();
+}
+function doDeleteList(lid){
+  if(!confirm('Delete this checklist and all its tasks?'))return;
+  lists=lists.filter(l=>l.id!==lid); delete tasks[lid]; delete cats[lid];
+  save(); activeTab=lists[0]?.id||'__today__'; renderAll();
+}
+function openNewCat(lid){
+  _addTaskLid=lid;
+  document.getElementById('inNewCat').value='';
+  document.getElementById('inNewCat')._lid=lid;
+  openM('mNewCat');
+  setTimeout(()=>document.getElementById('inNewCat').focus(),120);
+}
+function doCreateCat(){
+  const input=document.getElementById('inNewCat');
+  const name=input.value.trim(); const lid=input._lid||_addTaskLid||activeTab;
+  if(!name||!lid)return;
+  if(!cats[lid])cats[lid]=[];
+  if(!cats[lid].includes(name))cats[lid].push(name);
+  input.value=''; input._lid='';
+  save(); closeM('mNewCat'); renderListView(lid);
+}
+function doOpenEditCat(lid,cat){
+  _editCatLid=lid; _editCatOld=cat;
+  document.getElementById('inEditCat').value=cat;
+  openM('mEditCat');
+  setTimeout(()=>document.getElementById('inEditCat').focus(),120);
+}
+function doEditCat(){
+  const newName=document.getElementById('inEditCat').value.trim(); if(!newName)return;
+  cats[_editCatLid]=(cats[_editCatLid]||[]).map(c=>c===_editCatOld?newName:c);
+  (tasks[_editCatLid]||[]).forEach(t=>{if(t.cat===_editCatOld)t.cat=newName;});
+  save(); closeM('mEditCat'); renderListView(_editCatLid);
+}
+function doDeleteCat(lid,cat){
+  if(!confirm(`Delete "${cat}" and all its tasks?`))return;
+  cats[lid]=(cats[lid]||[]).filter(c=>c!==cat);
+  tasks[lid]=(tasks[lid]||[]).filter(t=>t.cat!==cat);
+  save(); renderListView(lid);
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+function openM(id){ document.getElementById(id).classList.add('open'); }
+function closeM(id){ document.getElementById(id).classList.remove('open'); }
+
+function toggleDoneSection(btn){
+  const sec=btn.nextElementSibling;
+  const open=sec.style.display!=='none';
+  sec.style.display=open?'none':'block';
+  btn.querySelector('.arr').style.transform=open?'':'rotate(180deg)';
+}
+
+// ═══════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════
+(async function init(){
+  loadLocal();
+  const d=new Date();
+  document.getElementById('navDateStr').textContent=
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]+', '
+    +['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]
+    +' '+d.getDate();
+  rebuildViewDivs();
+  renderAll();
+  updateNotifBtn();
+  updateOnlineStatus();
+  reScheduleNotifs();
+
+  // 1. Try to pull latest data from Firebase on startup
+  const pulled = await cloudPull();
+  // 2. If we had newer local data (or pull failed), push ours up
+  if(!pulled) setTimeout(cloudPush, 1000);
+
+  // 3. Poll Firebase every 30s to stay in sync across devices
+  setInterval(async ()=>{
+    await cloudPull();
+    reScheduleNotifs();
+  }, 30000);
+  // Register service worker for PWA / offline support
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => console.log('SW failed:', err));
+  }
+})();
+</script>
+</body>
+</html>
