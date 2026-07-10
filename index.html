@@ -257,6 +257,28 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 
 
 
+<div class="view" id="view-__sync__">
+  <div style="max-width:680px;margin:0 auto;padding:16px 0 120px;">
+    <div class="sync-card">
+      <h3>☁️ Firebase sync is active</h3>
+      <p>Every change saves to Firebase automatically. Open this app on any device to get the latest data.</p>
+      <button class="copy-btn" onclick="manualPush()">☁️ Push data to cloud now</button>
+      <div class="sync-msg" id="pushMsg"></div>
+      <div style="border:none;border-top:1px solid var(--border);margin:14px 0;"></div>
+      <div class="sync-msg info" id="lastSyncMsg">Checking connection…</div>
+    </div>
+    <div class="sync-card">
+      <h3>ℹ️ How sync works</h3>
+      <ol class="step-list">
+        <li>Every change you make is instantly saved to <strong>Firebase</strong>.</li>
+        <li>Open this app on any other device.</li>
+        <li>It automatically loads your latest data.</li>
+        <li>Changes on any device sync back every 30 seconds.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 <div class="view" id="view-__settings__">
   <div style="max-width:680px;margin:0 auto;padding:16px 0 120px;">
     <div class="settings-section">
@@ -537,6 +559,10 @@ async function cloudPull(){
     return false;
   }catch(e){setSyncMsg('! Could not reach Firebase.','err');return false;}
 }
+function initSyncView(){
+  if(lastSyncTime) setSyncMsg("Last synced: "+new Date(lastSyncTime).toLocaleString(),"ok");
+  else setSyncMsg("Not yet synced to cloud.","info");
+}
 async function manualPush(){
   const el=document.getElementById('pushMsg');
   if(el){el.textContent='Pushing…';el.className='sync-msg info';}
@@ -565,23 +591,10 @@ window.addEventListener('offline',updateOnlineStatus);
   if(Notification.permission==='denied'){
     alert('Notifications are blocked.\n\nTo fix:\n• Chrome Android: Settings → Site Settings → Notifications → find this site → Allow\n• Chrome Desktop: Click the 🔒 icon in address bar → Notifications → Allow\n• Firefox: Click 🔒 → Permissions → Allow Notifications');
     return;
-  }
-  Notification.requestPermission().then(p=>{
-      if(p==='granted'){
-          setTimeout(()=>new Notification("Sheehan's Checklist 🎉",{body:"Notifications enabled! You'll be reminded 1 hour and 30 minutes before due tasks.",icon:'/Sheehans-Checklist/icon-192.png'}),500);
-    } else {
-      alert('Permission not granted. You can change this in browser settings anytime.');
-    }
-  });
-}
-    },ms);
-  }
-}
-
-// ═══════════════════════════ THEME & APPEARANCE ═════════════════
+  }// ═══════════════════════════ THEME & APPEARANCE ═════════════════
 const SWATCHES=['#0071E3','#FF3B30','#FF9500','#34C759','#5E5CE6','#FF2D55','#00C7BE','#AF52DE','#1A1A1A','#636366'];
 function applyTheme(){
-  document.body.className='theme-'+theme+;
+  document.body.className='theme-'+theme;
   ['Light','Dim','Dark'].forEach(t=>{ const b=document.getElementById('tb'+t); if(b) b.classList.toggle('active',theme===t.toLowerCase()); });
   document.documentElement.style.setProperty('--accent',accentColor);
   // Compute accent-light and accent-dark
@@ -730,7 +743,7 @@ function renderSummaryView(){
 function renderTabs(){
   const overdueCount=lists.reduce((n,l)=>n+(tasks[l.id]||[]).filter(t=>!t.done&&isPast(t.date)).length,0);
   const SPECIAL=[{id:'__today__',label:'Today'},{id:'__overdue__',label:'Overdue'},{id:'__summary__',label:'Summary'}];
-  const TAIL=[];
+  const TAIL=[{id:'__sync__',label:'Sync ☁️'}];
   const all=[...SPECIAL,...lists,...TAIL];
   document.getElementById('tabBar').innerHTML=all.map(l=>{
     const isOvd=l.id==='__overdue__';
@@ -768,6 +781,7 @@ function switchTab(id){
   else if(id==='__overdue__'){renderOverdueView();document.getElementById('view-__overdue__').classList.add('active');}
   else if(id==='__summary__'){renderSummaryView();document.getElementById('view-__summary__').classList.add('active');}
   else if(id==='__sync__'){document.getElementById('view-__sync__').classList.add('active');initSyncView();}
+  else if(id==='__settings__'){document.getElementById('view-__settings__').classList.add('active');}
   else{renderListView(id);const v=document.getElementById('view-'+id);if(v)v.classList.add('active');}
 }
 
@@ -781,7 +795,7 @@ function refreshAllViews(){
   if(activeTab==='__today__') renderTodayView();
   else if(activeTab==='__overdue__') renderOverdueView();
   else if(activeTab==='__summary__') renderSummaryView();
-  else if(!['__settings__'].includes(activeTab)){ renderListView(activeTab); }
+  else if(!['__settings__','__sync__'].includes(activeTab)){ renderListView(activeTab); }
   // Always silently update today+overdue counts in background
   if(activeTab!=='__today__') renderTodayView();
   if(activeTab!=='__overdue__') renderOverdueView();
