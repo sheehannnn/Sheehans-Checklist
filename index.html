@@ -33,11 +33,16 @@ body{
   font-family:var(--font);-webkit-font-smoothing:antialiased;font-size:16px;
   transition:background .3s,color .3s;
 }
+/* bg overlay handled by #bgOverlay div */
+
+/* Background image overlay */
 #bgOverlay{
-  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  position:fixed;inset:0;z-index:-1;
   background-size:cover;background-position:center;background-repeat:no-repeat;
-  opacity:0;transition:opacity .3s;
+  pointer-events:none;opacity:.2;display:none;
+  transition:opacity .3s;
 }
+
 /* THEMES */
 body.theme-light{--bg:#F5F5F7;--card:#FFFFFF;--border:#E5E5EA;--border-strong:#C7C7CC;--text:#1D1D1F;--sub:#6E6E73;--muted:#AEAEB2;--shadow:0 2px 16px rgba(0,0,0,.07);}
 body.theme-dim{--bg:#2C2C2E;--card:#3A3A3C;--border:#48484A;--border-strong:#636366;--text:#F5F5F7;--sub:#AEAEB2;--muted:#636366;--shadow:0 2px 16px rgba(0,0,0,.3);}
@@ -128,6 +133,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 .tag-high{background:var(--amber-bg);color:var(--amber-text);}
 .tag-normal{background:var(--blue-bg);color:var(--blue-text);}
 .tag-low{background:var(--green-bg);color:var(--green-text);}
+.tag-none{display:none;}
 .task-dt{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px;}
 .task-dt.ovd{color:var(--red-text);font-weight:600;}
 .task-dt.tod{color:var(--amber-text);font-weight:600;}
@@ -155,7 +161,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 .badge-dot{width:7px;height:7px;background:var(--red);border-radius:50%;display:inline-block;margin-left:2px;animation:bdot 1.5s infinite;}
 @keyframes bdot{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-/* NOTIF BAR */
+
 
 /* SYNC VIEW */
 .sync-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);}
@@ -225,7 +231,6 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 </head>
 <body class="theme-light">
 
-<div id="bgOverlay" style="display:none;position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center;pointer-events:none;opacity:0.2;transition:opacity .3s;"></div>
 <nav class="nav">
   <div class="nav-top">
     <div class="brand">
@@ -234,7 +239,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
     </div>
     <div class="nav-icons">
 
-      <button class="ni" onclick="switchTab('__settings__')" title="Settings">
+      <button class="ni" onclick="switchTab('__settings__')" title="Settings & Theme">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </div>
@@ -250,12 +255,11 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
   Offline — changes saved locally, will sync when reconnected.
 </div>
 
+<div id="bgOverlay"></div>
 <div id="viewRoot"></div>
 <div class="view" id="view-__today__"></div>
 <div class="view" id="view-__overdue__"></div>
 <div class="view" id="view-__summary__"></div>
-
-
 
 <div class="view" id="view-__sync__">
   <div style="max-width:680px;margin:0 auto;padding:16px 0 120px;">
@@ -264,7 +268,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
       <p>Every change saves to Firebase automatically. Open this app on any device to get the latest data.</p>
       <button class="copy-btn" onclick="manualPush()">☁️ Push data to cloud now</button>
       <div class="sync-msg" id="pushMsg"></div>
-      <div style="border:none;border-top:1px solid var(--border);margin:14px 0;"></div>
+      <div class="sync-divider"></div>
       <div class="sync-msg info" id="lastSyncMsg">Checking connection…</div>
     </div>
     <div class="sync-card">
@@ -273,7 +277,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
         <li>Every change you make is instantly saved to <strong>Firebase</strong>.</li>
         <li>Open this app on any other device.</li>
         <li>It automatically loads your latest data.</li>
-        <li>Changes on any device sync back every 30 seconds.</li>
+        <li>Changes on any device sync back in 30 seconds.</li>
       </ol>
     </div>
   </div>
@@ -282,21 +286,21 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 <div class="view" id="view-__settings__">
   <div style="max-width:680px;margin:0 auto;padding:16px 0 120px;">
     <div class="settings-section">
-      <h3>Appearance</h3>
+      <h3>🎨 Appearance</h3>
       <div class="theme-btns">
         <button class="theme-btn active" id="tbLight" onclick="setTheme('light')">
-          <div class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div><div class="tb-label">Light</div>
+          <div class="tb-icon">☀️</div><div class="tb-label">Light</div>
         </button>
         <button class="theme-btn" id="tbDim" onclick="setTheme('dim')">
-          <div class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="9" x2="12" y2="2"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="16 5 12 9 8 5"/></svg></div><div class="tb-label">Dim</div>
+          <div class="tb-icon">🌆</div><div class="tb-label">Dim</div>
         </button>
         <button class="theme-btn" id="tbDark" onclick="setTheme('dark')">
-          <div class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div><div class="tb-label">Dark</div>
+          <div class="tb-icon">🌙</div><div class="tb-label">Dark</div>
         </button>
       </div>
     </div>
     <div class="settings-section">
-      <h3>Accent color</h3>
+      <h3>🎨 Accent color</h3>
       <div class="color-row" id="swatchRow"></div>
       <div style="display:flex;gap:8px;margin-top:10px;align-items:center;">
         <input class="hex-input" id="hexInput" placeholder="#0071E3" maxlength="7" oninput="applyHex(this.value)">
@@ -304,30 +308,30 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
       </div>
     </div>
     <div class="settings-section">
-      <h3>Background image</h3>
-      <p style="font-size:13px;color:var(--sub);margin-bottom:10px;">Upload a photo as a background. Adjust the opacity slider below.</p>
+      <h3>🖼️ Background image</h3>
+      <p style="font-size:13px;color:var(--sub);margin-bottom:12px;">Upload a photo as a background. Use the slider to adjust its visibility.</p>
       <label class="img-upload-btn" style="cursor:pointer;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         <span id="bgImgLabel">Choose image…</span>
-        <input type="file" accept="image/*" style="display:none" id="bgFileInput" onchange="handleBgImage(this)">
+        <input type="file" accept="image/*" style="display:none" onchange="handleBgImage(this)">
       </label>
-      <div style="margin-top:12px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <label class="lbl" style="margin:0;">Background opacity</label>
-          <span id="bgOpacityVal" style="font-size:12px;color:var(--accent);font-weight:600;">20%</span>
+      <div id="bgPreview" style="display:none;width:100%;height:90px;background-size:cover;background-position:center;border-radius:var(--r-sm);margin-top:10px;border:1px solid var(--border);"></div>
+      <div style="margin-top:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:600;color:var(--sub);">OPACITY</span>
+          <span id="bgOpacityVal" style="font-size:13px;font-weight:700;color:var(--accent);">20%</span>
         </div>
-        <input type="range" id="bgOpacity" min="0" max="60" value="20" step="1"
+        <input type="range" id="bgOpacity" min="5" max="80" value="20" step="5"
           style="width:100%;accent-color:var(--accent);"
           oninput="setBgOpacity(this.value)">
       </div>
-      <div id="bgPreview" style="display:none;margin-top:10px;border-radius:var(--r-sm);overflow:hidden;height:80px;background-size:cover;background-position:center;border:1px solid var(--border);"></div>
-      <button class="reset-btn" onclick="removeBgImage()" style="margin-top:8px;background:var(--border);color:var(--sub);border-color:var(--border);">
+      <button class="reset-btn" onclick="removeBgImage()" style="margin-top:12px;background:var(--border);color:var(--sub);border-color:var(--border);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         Remove background image
       </button>
     </div>
     <div class="settings-section">
-      <h3>Manage tasks</h3>
+      <h3>🗑️ Manage tasks</h3>
       <p style="font-size:13px;color:var(--sub);margin-bottom:12px;">Clean up completed tasks to keep things tidy.</p>
       <button class="reset-btn" onclick="clearDoneTasks()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -337,15 +341,6 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         Reset progress (uncheck all done tasks)
       </button>
-    </div>
-    <div class="settings-section">
-      <h3>Cloud sync</h3>
-      <p style="font-size:13px;color:var(--sub);margin-bottom:12px;">Your data saves to Firebase automatically on every change.</p>
-      <button class="reset-btn" style="background:var(--accent-light);color:var(--accent);border-color:var(--accent-light);" onclick="manualPush()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-        Push data to cloud now
-      </button>
-      <div class="sync-msg info" id="lastSyncMsg" style="margin-top:8px;font-size:13px;">Checking…</div>
     </div>
   </div>
 </div>
@@ -375,7 +370,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 <div class="modal-bd" id="mEditCat" onclick="if(event.target===this)closeM('mEditCat')">
   <div class="modal"><h2>Rename category</h2>
     <label class="lbl">Category name</label>
-    <input class="fi" id="inRenameCat" maxlength="30" onkeydown="if(event.key==='Enter')doEditCat()">
+    <input class="fi" id="inEditCatName" maxlength="30" onkeydown="if(event.key==='Enter')doEditCat()">
     <div class="mbtns"><button class="mbtn cancel" onclick="closeM('mEditCat')">Cancel</button><button class="mbtn ok" onclick="doEditCat()">Save</button></div>
   </div>
 </div>
@@ -390,6 +385,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
     <div class="grid3">
       <div><label class="lbl">Priority</label>
         <select class="fi fi-sm" id="inTaskPri" style="margin-bottom:0;">
+          <option value="none">— No priority</option>
           <option value="urgent">🔴 Urgent</option>
           <option value="high" selected>🟠 High</option>
           <option value="normal">🔵 Normal</option>
@@ -409,10 +405,11 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
     <label class="lbl">Note</label>
     <textarea class="fi fi-ta" id="inEditNote" placeholder="Add a note…"></textarea>
     <label class="lbl">Category</label>
-    <select class="fi fi-sm" id="inEditCat" style="margin-bottom:13px;"></select>
+    <select class="fi fi-sm" id="inTaskEditCat" style="margin-bottom:13px;"></select>
     <div class="grid3">
       <div><label class="lbl">Priority</label>
         <select class="fi fi-sm" id="inEditPri" style="margin-bottom:0;">
+          <option value="none">— No priority</option>
           <option value="urgent">🔴 Urgent</option>
           <option value="high">🟠 High</option>
           <option value="normal">🔵 Normal</option>
@@ -439,7 +436,7 @@ const isPast  = s => !!s && s<todayStr();
 function fmtDate(s){ if(!s)return''; const[,m,d]=s.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+parseInt(d); }
 function fmtTime(t){ if(!t)return''; const[h,m]=t.split(':'); const hr=+h; return (hr%12||12)+':'+m+(hr<12?'am':'pm'); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-const priMeta={urgent:{l:'Urgent',c:'tag-urgent'},high:{l:'High',c:'tag-high'},normal:{l:'Normal',c:'tag-normal'},low:{l:'Low',c:'tag-low'}};
+const priMeta={none:{l:'None',c:'tag-none'},urgent:{l:'Urgent',c:'tag-urgent'},high:{l:'High',c:'tag-high'},normal:{l:'Normal',c:'tag-normal'},low:{l:'Low',c:'tag-low'}};
 const priOrder={urgent:0,high:1,normal:2,low:3};
 
 // ═══════════════════════════ STATE ══════════════════════════════
@@ -450,44 +447,16 @@ let lastSyncTime='', lastEditTime='';
 let activeTab='__today__';
 let _editListId='', _editCatLid='', _editCatOld='', _editTaskId='', _editTaskLid='';
 let _addTaskLid='', _addTaskCat='';
-let bgOpacityPct=20;
-function setBgOpacity(val){
-  bgOpacityPct=parseInt(val);
-  const valEl=document.getElementById('bgOpacityVal');
-  if(valEl) valEl.textContent=bgOpacityPct+'%';
-  const ov=document.getElementById('bgOverlay');
-  if(ov&&ov.style.backgroundImage&&ov.style.backgroundImage!=='none'&&ov.style.backgroundImage!==''){
-    ov.style.opacity=(bgOpacityPct/100).toFixed(2);
-  }
-  try{localStorage.setItem('sheehan_bg_opacity',bgOpacityPct);}catch(e){}
-}
+let notifTimers={};
 let _pushing=false, _pendingPush=false;
 let _dragTabId=null;
-let bgOpacityPct=20;
 let theme='light', accentColor='#0071E3';
 
 const PROTECTED=['move','personal','work'];
 
 const defLists=[{id:'move',label:'Moving prep'},{id:'personal',label:'Personal'},{id:'work',label:'Work'}];
 const defCats={move:['Packing','Selling','Buying'],personal:['Errands','Social','Shopping'],work:['Daily']};
-function defTasks(){ return {
-  move:[
-    {id:1,name:'Buy moving boxes',note:'~10–15 boxes.',priority:'urgent',cat:'Buying',date:todayStr(),time:'',done:false},
-    {id:2,name:'Declutter — decide what to keep',note:'Room by room.',priority:'high',cat:'Packing',date:'',time:'',done:false},
-    {id:3,name:'List items to sell',note:'Post on Carousell.',priority:'high',cat:'Selling',date:'',time:'',done:false},
-    {id:4,name:'Pack up the house',note:'Label every box.',priority:'normal',cat:'Packing',date:'',time:'',done:false},
-    {id:5,name:'Finish selling items',note:'Before moving week.',priority:'normal',cat:'Selling',date:'',time:'',done:false},
-  ],
-  personal:[
-    {id:6,name:'Do laundry',note:'',priority:'urgent',cat:'Errands',date:todayStr(),time:'',done:false},
-    {id:7,name:'Buy acne meds',note:'',priority:'high',cat:'Shopping',date:todayStr(),time:'',done:false},
-    {id:8,name:'Schedule hangouts with friends',note:'Lock in dates.',priority:'high',cat:'Social',date:'',time:'',done:false},
-    {id:9,name:'Buy a bike',note:'Order online.',priority:'normal',cat:'Shopping',date:'',time:'',done:false},
-  ],
-  work:[
-    {id:10,name:'Work shift (Mon–Fri)',note:'7:00am–11:30am.',priority:'urgent',cat:'Daily',date:todayStr(),time:'07:00',done:false},
-  ],
-};}
+function defTasks(){ return {move:[],personal:[],work:[];};}
 
 // ═══════════════════════════ STORAGE ════════════════════════════
 function loadLocal(){
@@ -535,7 +504,7 @@ async function cloudPush(){
     saveLocal();
     setSyncMsg('✅ Synced — '+new Date(lastSyncTime).toLocaleTimeString(),'ok');
   }catch(e){
-    setSyncMsg('! Firebase unreachable — saved locally.','err');
+    setSyncMsg('⚠️ Firebase unreachable — saved locally.','err');
   }finally{_pushing=false;}
 }
 async function cloudPull(){
@@ -551,17 +520,13 @@ async function cloudPull(){
       nextId=d.nextId||nextId; nextListId=d.nextListId||nextListId;
       lastSyncTime=d.lastSyncTime||''; lastEditTime=d.lastEditTime||'';
       if(d.theme)theme=d.theme; if(d.accentColor)accentColor=d.accentColor;
-      saveLocal(); applyTheme(); rebuildViewDivs(); renderAll(); 
+      saveLocal(); applyTheme(); rebuildViewDivs(); renderAll();
       setSyncMsg('✅ Updated from cloud — '+new Date().toLocaleTimeString(),'ok');
       return true;
     }
     setSyncMsg('✅ Up to date — '+new Date().toLocaleTimeString(),'ok');
     return false;
-  }catch(e){setSyncMsg('! Could not reach Firebase.','err');return false;}
-}
-function initSyncView(){
-  if(lastSyncTime) setSyncMsg("Last synced: "+new Date(lastSyncTime).toLocaleString(),"ok");
-  else setSyncMsg("Not yet synced to cloud.","info");
+  }catch(e){setSyncMsg('⚠️ Could not reach Firebase.','err');return false;}
 }
 async function manualPush(){
   const el=document.getElementById('pushMsg');
@@ -578,23 +543,10 @@ function updateOnlineStatus(){
 window.addEventListener('online',updateOnlineStatus);
 window.addEventListener('offline',updateOnlineStatus);
 
-// ═══════════════════════════ NOTIFICATIONS ═════════════════════
-  if(Notification.permission==='granted'){
-    // Test notification
-    new Notification("Sheehan's Checklist ✅",{
-      body:"Notifications are working! You'll get reminders before due tasks and a morning digest at 8am.",
-      icon:'/Sheehans-Checklist/icon-192.png',
-      tag:'test'
-    });
-      return;
-  }
-  if(Notification.permission==='denied'){
-    alert('Notifications are blocked.\n\nTo fix:\n• Chrome Android: Settings → Site Settings → Notifications → find this site → Allow\n• Chrome Desktop: Click the 🔒 icon in address bar → Notifications → Allow\n• Firefox: Click 🔒 → Permissions → Allow Notifications');
-    return;
-  }// ═══════════════════════════ THEME & APPEARANCE ═════════════════
+// ═══════════════════════════ THEME & APPEARANCE ═════════════════
 const SWATCHES=['#0071E3','#FF3B30','#FF9500','#34C759','#5E5CE6','#FF2D55','#00C7BE','#AF52DE','#1A1A1A','#636366'];
 function applyTheme(){
-  document.body.className='theme-'+theme;
+  document.body.className='theme-'+theme+(document.body.classList.contains('has-bg-image')?' has-bg-image':'');
   ['Light','Dim','Dark'].forEach(t=>{ const b=document.getElementById('tb'+t); if(b) b.classList.toggle('active',theme===t.toLowerCase()); });
   document.documentElement.style.setProperty('--accent',accentColor);
   // Compute accent-light and accent-dark
@@ -616,60 +568,62 @@ function buildSwatches(){
   const row=document.getElementById('swatchRow');
   row.innerHTML=SWATCHES.map(c=>`<div class="color-swatch${c===accentColor?' active':''}" data-color="${c}" style="background:${c}" onclick="accentColor='${c}';applyTheme()" title="${c}"></div>`).join('');
 }
-function getOverlay(){ return document.getElementById('bgOverlay'); }
+function _ov(){ return document.getElementById('bgOverlay'); }
 function handleBgImage(input){
   const file=input.files[0]; if(!file)return;
   const reader=new FileReader();
   reader.onload=e=>{
-    const dataUrl=e.target.result;
-    const ov=getOverlay();
-    if(ov){ ov.style.backgroundImage=`url('${dataUrl}')`; ov.style.display='block'; }
-    document.getElementById('bgImgLabel').textContent=file.name;
+    const url=e.target.result;
+    const ov=_ov();
+    if(ov){ ov.style.backgroundImage=`url('${url}')`; ov.style.display='block'; }
     const prev=document.getElementById('bgPreview');
-    if(prev){ prev.style.backgroundImage=`url('${dataUrl}')`; prev.style.display='block'; }
-    try{ localStorage.setItem('sheehan_bg',dataUrl); localStorage.setItem('sheehan_bg_name',file.name); }
-    catch(er){ alert('Image too large to save locally. Try a smaller image.'); }
+    if(prev){ prev.style.backgroundImage=`url('${url}')`; prev.style.display='block'; }
+    document.getElementById('bgImgLabel').textContent=file.name;
+    try{
+      localStorage.setItem('sheehan_bg', url);
+      localStorage.setItem('sheehan_bg_name', file.name);
+    }catch(err){ alert('Image may be too large to save. Try a smaller file.'); }
   };
   reader.readAsDataURL(file);
 }
 function setBgOpacity(val){
-  bgOpacityPct=parseInt(val);
-  const ov=getOverlay();
-  if(ov) ov.style.opacity=(bgOpacityPct/100).toFixed(2);
+  const pct=parseInt(val);
+  const ov=_ov();
+  if(ov && ov.style.display!=='none') ov.style.opacity=(pct/100).toFixed(2);
   const lbl=document.getElementById('bgOpacityVal');
-  if(lbl) lbl.textContent=bgOpacityPct+'%';
-  try{localStorage.setItem('sheehan_bg_opacity',bgOpacityPct);}catch(er){}
+  if(lbl) lbl.textContent=pct+'%';
+  const slider=document.getElementById('bgOpacity');
+  if(slider) slider.value=pct;
+  try{ localStorage.setItem('sheehan_bg_opacity', pct); }catch(err){}
 }
 function removeBgImage(){
-  const ov=getOverlay();
+  const ov=_ov();
   if(ov){ ov.style.backgroundImage=''; ov.style.display='none'; }
   const prev=document.getElementById('bgPreview');
   if(prev){ prev.style.backgroundImage=''; prev.style.display='none'; }
   document.getElementById('bgImgLabel').textContent='Choose image…';
-  try{ localStorage.removeItem('sheehan_bg'); localStorage.removeItem('sheehan_bg_name'); }catch(er){}
+  try{ localStorage.removeItem('sheehan_bg'); localStorage.removeItem('sheehan_bg_name'); }catch(err){}
 }
 function loadBgImage(){
   try{
-    const bg=localStorage.getItem('sheehan_bg');
-    const name=localStorage.getItem('sheehan_bg_name');
-    const op=localStorage.getItem('sheehan_bg_opacity');
+    const bg  = localStorage.getItem('sheehan_bg');
+    const name= localStorage.getItem('sheehan_bg_name');
+    const op  = localStorage.getItem('sheehan_bg_opacity');
     if(bg){
-      const ov=getOverlay();
+      const ov=_ov();
       if(ov){ ov.style.backgroundImage=`url('${bg}')`; ov.style.display='block'; }
       const prev=document.getElementById('bgPreview');
       if(prev){ prev.style.backgroundImage=`url('${bg}')`; prev.style.display='block'; }
-      if(name) document.getElementById('bgImgLabel').textContent=name;
+      if(name){ const lbl=document.getElementById('bgImgLabel'); if(lbl) lbl.textContent=name; }
     }
     if(op){
-      bgOpacityPct=parseInt(op);
-      const slider=document.getElementById('bgOpacity');
-      if(slider) slider.value=bgOpacityPct;
-      const lbl=document.getElementById('bgOpacityVal');
-      if(lbl) lbl.textContent=bgOpacityPct+'%';
-      const ov=getOverlay();
-      if(ov&&bg) ov.style.opacity=(bgOpacityPct/100).toFixed(2);
+      const pct=parseInt(op);
+      const ov=_ov();
+      if(ov && bg) ov.style.opacity=(pct/100).toFixed(2);
+      const lbl=document.getElementById('bgOpacityVal'); if(lbl) lbl.textContent=pct+'%';
+      const slider=document.getElementById('bgOpacity'); if(slider) slider.value=pct;
     }
-  }catch(er){}
+  }catch(err){}
 }
 
 // ═══════════════════════════ RESET / CLEAR ══════════════════════
@@ -717,7 +671,7 @@ function renderSummaryView(){
 
   let h=`<div style="max-width:680px;margin:0 auto;padding:16px 0 120px;">
     <div class="summary-card">
-      <h2>Weekly Summary</h2>
+      <h2>🌟 Weekly Summary</h2>
       <div class="sum-sub">${wlabel}</div>
       <div class="sum-stat-grid">
         <div class="sum-stat"><div class="sum-stat-num">${totalDone}</div><div class="sum-stat-lbl">TASKS DONE</div></div>
@@ -725,7 +679,7 @@ function renderSummaryView(){
         <div class="sum-stat"><div class="sum-stat-num">${urgentDone}</div><div class="sum-stat-lbl">URGENT DONE</div></div>
         <div class="sum-stat"><div class="sum-stat-num">${totalTasks-totalDone}</div><div class="sum-stat-lbl">REMAINING</div></div>
       </div>
-      <div class="sum-quote">${esc(quote)}</div>
+      <div class="sum-quote">"${quote}"</div>
     </div>`;
 
   byList.forEach(l=>{
@@ -784,6 +738,9 @@ function switchTab(id){
   else if(id==='__settings__'){document.getElementById('view-__settings__').classList.add('active');}
   else{renderListView(id);const v=document.getElementById('view-'+id);if(v)v.classList.add('active');}
 }
+function initSyncView(){
+  if(lastSyncTime) setSyncMsg('✅ Last synced: '+new Date(lastSyncTime).toLocaleString(),'ok');
+}
 
 // ═══════════════════════════ VIEWS ══════════════════════════════
 function rebuildViewDivs(){
@@ -795,11 +752,10 @@ function refreshAllViews(){
   if(activeTab==='__today__') renderTodayView();
   else if(activeTab==='__overdue__') renderOverdueView();
   else if(activeTab==='__summary__') renderSummaryView();
-  else if(!['__settings__','__sync__'].includes(activeTab)){ renderListView(activeTab); }
+  else if(!['__sync__','__settings__'].includes(activeTab)){ renderListView(activeTab); }
   // Always silently update today+overdue counts in background
   if(activeTab!=='__today__') renderTodayView();
   if(activeTab!=='__overdue__') renderOverdueView();
-  if(activeTab==='__settings__'){ setSyncMsg(lastSyncTime?'Last synced: '+new Date(lastSyncTime).toLocaleString():'Not yet synced','info'); }
 }
 function renderAll(){
   rebuildViewDivs(); renderTabs();
@@ -826,7 +782,6 @@ function renderTodayView(){
 
   let h='';
 
-
   h+=`<div class="today-hero"><h2>Today</h2><div class="date-str">${dateLabel}</div>
     <div class="today-stats">
       <div class="ts"><div class="ts-num">${pending.length}</div><div class="ts-lbl">PENDING</div></div>
@@ -834,10 +789,10 @@ function renderTodayView(){
       <div class="ts"><div class="ts-num">${doneArr.length}</div><div class="ts-lbl">DONE</div></div>
     </div></div>`;
 
-  if(overdueCount>0) h+=`<div style="background:var(--red-bg);border:1px solid rgba(255,59,48,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="switchTab('__overdue__')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red-text)" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--red-text);">${overdueCount} overdue task${overdueCount>1?'s':''}</div><div style="font-size:12px;color:var(--sub);">Tap to view →</div></div></div>`;
+  if(overdueCount>0) h+=`<div style="background:var(--red-bg);border:1px solid rgba(255,59,48,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="switchTab('__overdue__')"><span style="font-size:18px;">⚠️</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--red-text);">${overdueCount} overdue task${overdueCount>1?'s':''}</div><div style="font-size:12px;color:var(--sub);">Tap to view →</div></div></div>`;
 
   if(pending.length===0&&doneArr.length===0){
-    h+=`<div class="empty-today"><div class="e-icon" style="font-size:40px;margin-bottom:12px;">&#10003;</div><h3>All clear for today!</h3><p>Tasks with today's date appear here automatically. They also stay in their original tab.</p></div>`;
+    h+=`<div class="empty-today"><div class="e-icon">✅</div><h3>All clear for today!</h3><p>Tasks with today's date appear here automatically. They also stay in their original tab.</p></div>`;
   } else {
     const grouped={};
     pending.forEach(x=>{if(!grouped[x.lid])grouped[x.lid]={label:x.label,items:[]};grouped[x.lid].items.push(x);});
@@ -867,14 +822,14 @@ function renderOverdueView(){
   });
   overdue.sort((a,b)=>a.t.date<b.t.date?-1:a.t.date>b.t.date?1:(priOrder[a.t.priority]||2)-(priOrder[b.t.priority]||2));
 
-  let h=`<div class="overdue-hero"><h2>Overdue</h2><div class="date-str">${overdue.length} unfinished task${overdue.length!==1?'s':''} from previous days</div></div>`;
+  let h=`<div class="overdue-hero"><h2>⚠️ Overdue</h2><div class="date-str">${overdue.length} unfinished task${overdue.length!==1?'s':''} from previous days</div></div>`;
   if(overdue.length===0&&doneArr.length===0){
-    h+=`<div class="empty-today"><div class="e-icon" style="font-size:40px;margin-bottom:12px;">&#10024;</div><h3>No overdue tasks!</h3><p>You're all caught up. Keep it up!</p></div>`;
+    h+=`<div class="empty-today"><div class="e-icon">🎉</div><h3>No overdue tasks!</h3><p>You're all caught up. Keep it up!</p></div>`;
   } else {
     const byDate={};
     overdue.forEach(x=>{const dk=x.t.date||'';if(!byDate[dk])byDate[dk]={date:x.t.date,items:[]};byDate[dk].items.push(x);});
     Object.values(byDate).forEach(g=>{
-      h+=`<div class="today-group"><div class="overdue-group-lbl">${fmtDate(g.date)||'No date'}</div>`;
+      h+=`<div class="today-group"><div class="overdue-group-lbl">📅 ${fmtDate(g.date)||'No date'}</div>`;
       g.items.forEach(x=>h+=mirrorTaskHTML(x.t,x.lid,x.label));
       h+=`</div>`;
     });
@@ -1009,21 +964,20 @@ function doAddTask(){
 function openEditTask(id,lid){
   const f=findTask(id); if(!f)return;
   _editTaskId=id;
-  _editTaskLid=f.lid; // always use the real home list, not mirror
+  _editTaskLid=f.lid; // always use real home list, never the mirror lid
   const t=f.t;
   document.getElementById('inEditName').value=t.name||'';
   document.getElementById('inEditNote').value=t.note||'';
   document.getElementById('inEditPri').value=t.priority||'normal';
   document.getElementById('inEditDate').value=t.date||'';
   document.getElementById('inEditTime').value=t.time||'';
-  // Build category options from the task's real home list
-  let catOptions=[...(cats[f.lid]||[])];
-  if(t.cat && !catOptions.includes(t.cat)) catOptions.unshift(t.cat);
-  if(catOptions.length===0) catOptions=['General'];
-  const catSelect=document.getElementById('inEditCat');
-  // Set innerHTML and value synchronously — no setTimeout to avoid race condition
-  catSelect.innerHTML=catOptions.map(c=>`<option value="${esc(c)}"${c===t.cat?' selected':''}>${esc(c)}</option>`).join('');
-  catSelect.value=t.cat||catOptions[0];
+  // Build category list from the task's actual home list
+  let catOpts=[...(cats[f.lid]||[])];
+  if(t.cat && !catOpts.includes(t.cat)) catOpts.unshift(t.cat); // keep task's cat even if missing
+  if(catOpts.length===0) catOpts=['General'];
+  const catSel=document.getElementById('inTaskEditCat');
+  catSel.innerHTML=catOpts.map(cc=>`<option value="${esc(cc)}">${esc(cc)}</option>`).join('');
+  catSel.value=t.cat||catOpts[0]; // set value explicitly after options are built
   openM('mEditTask');
   setTimeout(()=>document.getElementById('inEditName').focus(),120);
 }
@@ -1034,12 +988,7 @@ function doSaveEdit(){
   if(name) t.name=name;
   t.note=document.getElementById('inEditNote').value.trim();
   t.priority=document.getElementById('inEditPri').value;
-  const newCat=document.getElementById('inEditCat').value;
-  // If newCat isn't in the list yet, add it so task doesn't go orphaned
-  if(newCat && cats[_editTaskLid] && !cats[_editTaskLid].includes(newCat)){
-    cats[_editTaskLid].push(newCat);
-  }
-  t.cat=newCat||t.cat;
+  t.cat=document.getElementById('inTaskEditCat').value;
   t.date=document.getElementById('inEditDate').value;
   t.time=document.getElementById('inEditTime').value;
   closeM('mEditTask'); save();
@@ -1091,12 +1040,12 @@ function doCreateCat(){
 }
 function doOpenEditCat(lid,cat){
   _editCatLid=lid; _editCatOld=cat;
-  document.getElementById('inRenameCat').value=cat;
+  document.getElementById('inEditCatName').value=cat;
   openM('mEditCat');
-  setTimeout(()=>document.getElementById('inRenameCat').focus(),120);
+  setTimeout(()=>document.getElementById('inEditCatName').focus(),120);
 }
 function doEditCat(){
-  const newName=document.getElementById('inRenameCat').value.trim(); if(!newName)return;
+  const newName=document.getElementById('inEditCatName').value.trim(); if(!newName)return;
   cats[_editCatLid]=(cats[_editCatLid]||[]).map(c=>c===_editCatOld?newName:c);
   (tasks[_editCatLid]||[]).forEach(t=>{if(t.cat===_editCatOld)t.cat=newName;});
   closeM('mEditCat'); save();
@@ -1139,7 +1088,7 @@ function toggleDoneSection(btn){
   if(!pulled) setTimeout(cloudPush,1500);
 
   // Poll every 30s for multi-device sync
-  setInterval(async()=>{ await cloudPull();  },30000);
+  setInterval(async()=>{ await cloudPull(); },30000);
 
   // Service worker
   if('serviceWorker' in navigator){
