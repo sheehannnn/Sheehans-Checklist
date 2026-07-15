@@ -129,6 +129,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 .tag-high{background:var(--amber-bg);color:var(--amber-text);}
 .tag-normal{background:var(--blue-bg);color:var(--blue-text);}
 .tag-low{background:var(--green-bg);color:var(--green-text);}
+.tag-none{display:none;}
 .task-dt{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px;}
 .task-dt.ovd{color:var(--red-text);font-weight:600;}
 .task-dt.tod{color:var(--amber-text);font-weight:600;}
@@ -365,7 +366,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 <div class="modal-bd" id="mAddTask" onclick="if(event.target===this)closeM('mAddTask')">
   <div class="modal"><h2 id="mAddTaskTitle">Add task</h2>
     <label class="lbl">Task name</label>
-    <input class="fi" id="inTaskName" placeholder="What needs to be done?">
+    <input class="fi" id="inTaskName" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter')doAddTask()">
     <label class="lbl">Note <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
     <textarea class="fi fi-ta" id="inTaskNote" placeholder="Add a note…"></textarea>
     <label class="lbl">Category</label>
@@ -373,6 +374,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
     <div class="grid3">
       <div><label class="lbl">Priority</label>
         <select class="fi fi-sm" id="inTaskPri" style="margin-bottom:0;">
+          <option value="none" selected>— No priority</option>
           <option value="urgent">🔴 Urgent</option>
           <option value="high" selected>🟠 High</option>
           <option value="normal">🔵 Normal</option>
@@ -389,7 +391,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 <div class="modal-bd" id="mEditTask" onclick="if(event.target===this)closeM('mEditTask')">
   <div class="modal"><h2>Edit task</h2>
     <label class="lbl">Task name</label>
-    <input class="fi" id="inEditName" placeholder="Task name">
+    <input class="fi" id="inEditName" placeholder="Task name" onkeydown="if(event.key==='Enter')doSaveEdit()">
     <label class="lbl">Note</label>
     <textarea class="fi fi-ta" id="inEditNote" placeholder="Add a note…"></textarea>
     <label class="lbl">Category</label>
@@ -397,6 +399,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
     <div class="grid3">
       <div><label class="lbl">Priority</label>
         <select class="fi fi-sm" id="inEditPri" style="margin-bottom:0;">
+                    <option value="none">— No priority</option>
           <option value="urgent">🔴 Urgent</option>
           <option value="high">🟠 High</option>
           <option value="normal">🔵 Normal</option>
@@ -424,7 +427,7 @@ const isPast  = s => !!s && s<todayStr();
 function fmtDate(s){ if(!s)return''; const[,m,d]=s.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+parseInt(d); }
 function fmtTime(t){ if(!t)return''; const[h,m]=t.split(':'); const hr=+h; return (hr%12||12)+':'+m+(hr<12?'am':'pm'); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-const priMeta={urgent:{l:'Urgent',c:'tag-urgent'},high:{l:'High',c:'tag-high'},normal:{l:'Normal',c:'tag-normal'},low:{l:'Low',c:'tag-low'}};
+const priMeta={none:{l:'',c:'tag-none'},urgent:{l:'Urgent',c:'tag-urgent'},high:{l:'High',c:'tag-high'},normal:{l:'Normal',c:'tag-normal'},low:{l:'Low',c:'tag-low'}};
 const priOrder={urgent:0,high:1,normal:2,low:3,'':4};
 
 // ═══════════════════════════ STATE ══════════════════════════════
@@ -441,7 +444,7 @@ let theme='light', accentColor='#0071E3', bgOpacity=18;
 
 const PROTECTED=['move','personal','work'];
 
-const defLists=[{id:'move',label:'Moving prep'},{id:'personal',label:'Personal'},{id:'work',label:'Work'}];
+const defLists=[{id:'move',label:'Moving prep',showProgress:true},{id:'personal',label:'Personal',showProgress:true},{id:'work',label:'Work',showProgress:true}];
 const defCats={move:['Packing','Selling','Buying'],personal:['Errands','Social','Shopping'],work:['Daily']};
 function defTasks(){ return {
   move:[
@@ -773,6 +776,12 @@ function renderAll(){
 }
 
 // ─── TODAY ──────────────────────────────────────────────────────
+
+function toggleProgress(lid){
+  const l=lists.find(l=>l.id===lid); if(!l) return;
+  l.showProgress=!l.showProgress;
+  saveLocal(); renderListView(lid);
+}
 function renderTodayView(){
   const el=document.getElementById('view-__today__'); if(!el)return;
   const pending=[],doneArr=[];
@@ -797,6 +806,16 @@ function renderTodayView(){
       <div class="ts"><div class="ts-num">${doneArr.length}</div><div class="ts-lbl">DONE</div></div>
     </div></div>`;
 
+  // Progress bar for today
+  const allPendingToday=pending.length, allDoneToday=doneArr.length;
+  const totalToday=allPendingToday+allDoneToday;
+  const pctToday=totalToday?Math.round(allDoneToday/totalToday*100):0;
+  if(totalToday>0){
+    h+=`<div class="prog-card" style="margin-bottom:14px;">
+      <div class="prog-row"><span class="prog-label">Today's progress</span><span class="prog-count">${allDoneToday} / ${totalToday}</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pctToday}%"></div></div>
+    </div>`;
+  }
   if(overdueCount>0) h+=`<div style="background:var(--red-bg);border:1px solid rgba(255,59,48,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="switchTab('__overdue__')"><span style="font-size:18px;">⚠️</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--red-text);">${overdueCount} overdue task${overdueCount>1?'s':''}</div><div style="font-size:12px;color:var(--sub);">Tap to view →</div></div></div>`;
 
   if(pending.length===0&&doneArr.length===0){
@@ -857,11 +876,19 @@ function renderListView(lid){
   const allT=tasks[lid]||[];
   const done=allT.filter(t=>t.done).length, total=allT.length;
 
+  const listObj=lists.find(l=>l.id===lid)||{};
+  const showProg=listObj.showProgress!==false;
   let h=`<div style="max-width:680px;margin:0 auto;">
-    <div class="prog-card">
-      <div class="prog-row"><span class="prog-label">${esc(label)}</span><span class="prog-count">${done} / ${total}</span></div>
+    ${showProg?`<div class="prog-card">
+      <div class="prog-row">
+        <span class="prog-label">${esc(label)}</span>
+        <span style="display:flex;align-items:center;gap:10px;">
+          <span class="prog-count">${done} / ${total}</span>
+          <button onclick="toggleProgress('${lid}')" style="background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;font-family:var(--font);">Hide</button>
+        </span>
+      </div>
       <div class="prog-bar"><div class="prog-fill" style="width:${total?Math.round(done/total*100):0}%"></div></div>
-    </div>`;
+    </div>`:`<div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button onclick="toggleProgress('${lid}')" style="background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);cursor:pointer;font-family:var(--font);">Show progress</button></div>`}`;
 
   (cats[lid]||[]).forEach(cat=>{
     const catT=allT.filter(t=>t.cat===cat);
@@ -955,7 +982,7 @@ function openAddTask(lid,cat){
   document.getElementById('inTaskCat').innerHTML=(cats[lid]||[]).map(c=>`<option value="${esc(c)}"${c===cat?' selected':''}>${esc(c)}</option>`).join('');
   document.getElementById('inTaskName').value='';
   document.getElementById('inTaskNote').value='';
-  document.getElementById('inTaskPri').value='high';
+  document.getElementById('inTaskPri').value='none';
   document.getElementById('inTaskDate').value='';
   document.getElementById('inTaskTime').value='';
   openM('mAddTask');
@@ -975,7 +1002,7 @@ function openEditTask(id,lid){
   const t=f.t;
   document.getElementById('inEditName').value=t.name||'';
   document.getElementById('inEditNote').value=t.note||'';
-  document.getElementById('inEditPri').value=t.priority||'normal';
+  document.getElementById('inEditPri').value=t.priority||'none';
   document.getElementById('inEditDate').value=t.date||'';
   document.getElementById('inEditTime').value=t.time||'';
   const editLid=_editTaskLid||f.lid;
@@ -1003,7 +1030,7 @@ function doDeleteFromEdit(){
 function doCreateList(){
   const name=document.getElementById('inNewList').value.trim(); if(!name)return;
   const id='l'+(nextListId++);
-  lists.push({id,label:name}); cats[id]=['General']; tasks[id]=[];
+  lists.push({id,label:name,showProgress:true}); cats[id]=['General']; tasks[id]=[];
   closeM('mNewList'); document.getElementById('inNewList').value='';
   saveLocal(); rebuildViewDivs(); renderAll(); switchTab(id);
 }
@@ -1069,6 +1096,28 @@ function toggleDoneSection(btn){
 }
 
 // ═══════════════════════════ BOOT ═══════════════════════════════
+
+// ── SWIPE TO SWITCH TABS ─────────────────────────────────
+let _swipeStartX=0, _swipeStartY=0;
+function _getAllTabIds(){
+  const SPECIAL=['__today__','__overdue__','__summary__'];
+  const TAIL=['__sync__','__settings__'];
+  return [...SPECIAL,...lists.map(l=>l.id),...TAIL];
+}
+document.addEventListener('touchstart',e=>{
+  _swipeStartX=e.touches[0].clientX;
+  _swipeStartY=e.touches[0].clientY;
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX - _swipeStartX;
+  const dy=e.changedTouches[0].clientY - _swipeStartY;
+  if(Math.abs(dx)<60||Math.abs(dy)>Math.abs(dx)*0.8) return; // too short or too vertical
+  const ids=_getAllTabIds();
+  const cur=ids.indexOf(activeTab);
+  if(cur===-1) return;
+  if(dx<0 && cur<ids.length-1) switchTab(ids[cur+1]); // swipe left → next tab
+  if(dx>0 && cur>0)            switchTab(ids[cur-1]); // swipe right → prev tab
+},{passive:true});
 (async function init(){
   loadLocal();
   applyTheme();
