@@ -376,13 +376,12 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
         <select class="fi fi-sm" id="inTaskPri" style="margin-bottom:0;">
           <option value="none" selected>— No priority</option>
           <option value="urgent">🔴 Urgent</option>
-          <option value="high" selected>🟠 High</option>
+          <option value="high">🟠 High</option>
           <option value="normal">🔵 Normal</option>
           <option value="low">🟢 Low</option>
-          <option value="">&nbsp;</option>
         </select>
       </div>
-      <div><label class="lbl">Date</label><input class="fi fi-sm" type="date" id="inTaskDate" style="margin-bottom:0;"></div>
+      <div><div style="display:flex;justify-content:space-between;align-items:baseline;"><label class="lbl">Date</label><button type="button" onclick="document.getElementById('inTaskDate').value=''" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);" title="Remove date">Clear</button></div><input class="fi fi-sm" type="date" id="inTaskDate" style="margin-bottom:0;"></div>
       <div><label class="lbl">Time</label><input class="fi fi-sm" type="time" id="inTaskTime" style="margin-bottom:0;"></div>
     </div>
     <div style="margin-top:13px;" class="mbtns"><button class="mbtn cancel" onclick="closeM('mAddTask')">Cancel</button><button class="mbtn ok" onclick="doAddTask()">Add task</button></div>
@@ -404,10 +403,9 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
           <option value="high">🟠 High</option>
           <option value="normal">🔵 Normal</option>
           <option value="low">🟢 Low</option>
-          <option value="">&nbsp;</option>
         </select>
       </div>
-      <div><label class="lbl">Date</label><input class="fi fi-sm" type="date" id="inEditDate" style="margin-bottom:0;"></div>
+      <div><div style="display:flex;justify-content:space-between;align-items:baseline;"><label class="lbl">Date</label><button type="button" onclick="document.getElementById('inEditDate').value=''" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);" title="Remove date">Clear</button></div><input class="fi fi-sm" type="date" id="inEditDate" style="margin-bottom:0;"></div>
       <div><label class="lbl">Time</label><input class="fi fi-sm" type="time" id="inEditTime" style="margin-bottom:0;"></div>
     </div>
     <div style="margin-top:13px;" class="mbtns">
@@ -435,7 +433,7 @@ const STORE = 'sheehan_v3';
 const FB_URL = 'https://sheehan-checklist-default-rtdb.firebaseio.com/checklist.json';
 let lists=[], cats={}, tasks={}, nextId=200, nextListId=20;
 let lastSyncTime='', lastEditTime='';
-let activeTab='__today__';
+let activeTab='__summary__';
 let _editListId='', _editCatLid='', _editCatOld='', _editTaskId='', _editTaskLid='';
 let _addTaskLid='', _addTaskCat='';
 let _pushing=false, _pendingPush=false;
@@ -708,7 +706,7 @@ function renderSummaryView(){
 // ═══════════════════════════ TABS ═══════════════════════════════
 function renderTabs(){
   const overdueCount=lists.reduce((n,l)=>n+(tasks[l.id]||[]).filter(t=>!t.done&&isPast(t.date)).length,0);
-  const SPECIAL=[{id:'__today__',label:'Today'},{id:'__overdue__',label:'Overdue'},{id:'__summary__',label:'Summary'}];
+  const SPECIAL=[{id:'__summary__',label:'Summary'},{id:'__today__',label:'Today'},{id:'__overdue__',label:'Overdue'}];
   const TAIL=[{id:'__sync__',label:'Sync ☁️'}];
   const all=[...SPECIAL,...lists,...TAIL];
   document.getElementById('tabBar').innerHTML=all.map(l=>{
@@ -739,8 +737,13 @@ function onTabDrop(e,targetId){
 }
 function onTabDragEnd(){ _dragTabId=null; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('drag-over')); }
 
+function isValidTab(id){
+  return ['__summary__','__today__','__overdue__','__sync__','__settings__'].includes(id) || lists.some(l=>l.id===id);
+}
 function switchTab(id){
+  if(!isValidTab(id)) id='__summary__';
   activeTab=id;
+  try{localStorage.setItem('sheehan_active_tab',id);}catch(e){}
   renderTabs();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   if(id==='__today__'){renderTodayView();document.getElementById('view-__today__').classList.add('active');}
@@ -1100,7 +1103,7 @@ function toggleDoneSection(btn){
 // ── SWIPE TO SWITCH TABS ─────────────────────────────────
 let _swipeStartX=0, _swipeStartY=0, _swipeStartEl=null;
 function _getAllTabIds(){
-  const SPECIAL=['__today__','__overdue__','__summary__'];
+  const SPECIAL=['__summary__','__today__','__overdue__'];
   const TAIL=['__sync__','__settings__'];
   return [...SPECIAL,...lists.map(l=>l.id),...TAIL];
 }
@@ -1139,6 +1142,8 @@ document.addEventListener('touchend',e=>{
     +['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]
     +' '+d.getDate();
 
+  // Restore the tab you were on before refresh
+  try{const t=localStorage.getItem('sheehan_active_tab');if(t&&isValidTab(t))activeTab=t;}catch(e){}
   rebuildViewDivs();
   renderAll();
   updateOnlineStatus();
