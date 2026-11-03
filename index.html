@@ -382,9 +382,9 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
   <div class="modal"><h2 id="mAddTaskTitle">Add task</h2>
     <label class="lbl">Task name</label>
     <input class="fi" id="inTaskName" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter')doAddTask()">
-    <label class="lbl">Note <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <label class="lbl">Note</label>
     <textarea class="fi fi-ta" id="inTaskNote" placeholder="Add a note…"></textarea>
-    <label class="lbl">Checkboxes <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <label class="lbl">Checkboxes</label>
     <div id="inTaskChecks"></div>
     <button type="button" class="ck-add" onclick="addCheckDraft('add')">＋ Add checkbox</button>
     <label class="lbl">Category</label>
@@ -411,7 +411,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
     <input class="fi" id="inEditName" placeholder="Task name" onkeydown="if(event.key==='Enter')doSaveEdit()">
     <label class="lbl">Note</label>
     <textarea class="fi fi-ta" id="inEditNote" placeholder="Add a note…"></textarea>
-    <label class="lbl">Checkboxes <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <label class="lbl">Checkboxes</label>
     <div id="inEditChecks"></div>
     <button type="button" class="ck-add" onclick="addCheckDraft('edit')">＋ Add checkbox</button>
     <label class="lbl">Category</label>
