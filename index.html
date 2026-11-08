@@ -236,6 +236,23 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 
 /* OFFLINE BAR */
 #offlineBar{display:none;background:#FF9500;color:#fff;font-size:13px;font-weight:600;padding:8px 16px;align-items:center;gap:8px;justify-content:center;position:sticky;top:0;z-index:199;}
+/* list colours */
+.ldot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.list-chip{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:var(--text);padding:2px 8px 2px 6px;border-radius:20px;}
+.lc-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px;}
+.lc-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform .15s;}
+.lc-swatch:hover{transform:scale(1.12);}
+.lc-swatch.on{border-color:var(--text);}
+.lc-custom{position:relative;width:26px;height:26px;border-radius:50%;border:2px dashed var(--border-strong);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);cursor:pointer;overflow:hidden;}
+.lc-custom.on{border-style:solid;border-color:var(--text);}
+.lc-custom input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+/* repeat */
+.rep-row{display:flex;gap:8px;margin-bottom:6px;align-items:flex-end;}
+.rep-hint{font-size:11px;color:var(--muted);margin:2px 0 13px;line-height:1.4;}
+/* reorder checkboxes */
+.ck-mv{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:6px 5px;border-radius:6px;flex-shrink:0;line-height:1;}
+.ck-mv:hover:not(:disabled){color:var(--accent);background:var(--accent-light);}
+.ck-mv:disabled{opacity:.25;cursor:default;}
 </style>
 </head>
 <body class="theme-light">
@@ -254,7 +271,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
   </div>
   <div class="tabs-wrap">
     <div class="tabs" id="tabBar"></div>
-    <button class="new-tab-btn" onclick="openM('mNewList')" title="New checklist">+</button>
+    <button class="new-tab-btn" onclick="openNewList()" title="New checklist">+</button>
   </div>
 </nav>
 
@@ -354,13 +371,17 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
   <div class="modal"><h2>New checklist</h2>
     <label class="lbl">Name</label>
     <input class="fi" id="inNewList" placeholder="e.g. Errands, Health…" maxlength="30" onkeydown="if(event.key==='Enter')doCreateList()">
+    <label class="lbl">Color</label>
+    <div class="lc-row" id="newListColors"></div>
     <div class="mbtns"><button class="mbtn cancel" onclick="closeM('mNewList')">Cancel</button><button class="mbtn ok" onclick="doCreateList()">Create</button></div>
   </div>
 </div>
 <div class="modal-bd" id="mEditList" onclick="if(event.target===this)closeM('mEditList')">
-  <div class="modal"><h2>Rename checklist</h2>
+  <div class="modal"><h2>Edit checklist</h2>
     <label class="lbl">Name</label>
     <input class="fi" id="inEditList" maxlength="30" onkeydown="if(event.key==='Enter')doEditList()">
+    <label class="lbl">Color</label>
+    <div class="lc-row" id="editListColors"></div>
     <div class="mbtns"><button class="mbtn cancel" onclick="closeM('mEditList')">Cancel</button><button class="mbtn ok" onclick="doEditList()">Save</button></div>
   </div>
 </div>
@@ -399,9 +420,25 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
           <option value="low">🟢 Low</option>
         </select>
       </div>
-      <div><div style="display:flex;justify-content:space-between;align-items:baseline;"><label class="lbl">Date</label><button type="button" onclick="document.getElementById('inTaskDate').value=''" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);" title="Remove date">Clear</button></div><input class="fi fi-sm" type="date" id="inTaskDate" style="margin-bottom:0;"></div>
+      <div><div style="display:flex;justify-content:space-between;align-items:baseline;"><label class="lbl">Date</label><button type="button" onclick="document.getElementById('inTaskDate').value='';clearRepeat('add')" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);" title="Remove date">Clear</button></div><input class="fi fi-sm" type="date" id="inTaskDate" style="margin-bottom:0;"></div>
       <div><label class="lbl">Time</label><input class="fi fi-sm" type="time" id="inTaskTime" style="margin-bottom:0;"></div>
     </div>
+    <div class="rep-row">
+      <div style="flex:1.4;min-width:0;"><label class="lbl">Repeat</label>
+        <select class="fi fi-sm" id="inTaskRep" onchange="onRepChange('add')" style="margin-bottom:0;">
+          <option value="none">Never</option>
+          <option value="daily">Daily</option>
+          <option value="weekdays">Weekdays (Mon–Fri)</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+      </div>
+      <div id="repEveryWrap-add" style="flex:1;min-width:0;display:none;"><label class="lbl">Every</label>
+        <div style="display:flex;align-items:center;gap:6px;"><input class="fi fi-sm" type="number" min="1" max="99" value="1" id="inTaskRepEvery" style="margin-bottom:0;"><span id="repUnit-add" style="font-size:12px;color:var(--sub);white-space:nowrap;"></span></div>
+      </div>
+    </div>
+    <div class="rep-hint" id="repHint-add" style="display:none;">When you tick this off, the next one is created automatically.</div>
     <div style="margin-top:13px;" class="mbtns"><button class="mbtn cancel" onclick="closeM('mAddTask')">Cancel</button><button class="mbtn ok" onclick="doAddTask()">Add task</button></div>
   </div>
 </div>
@@ -426,9 +463,25 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
           <option value="low">🟢 Low</option>
         </select>
       </div>
-      <div><div style="display:flex;justify-content:space-between;align-items:baseline;"><label class="lbl">Date</label><button type="button" onclick="document.getElementById('inEditDate').value=''" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);" title="Remove date">Clear</button></div><input class="fi fi-sm" type="date" id="inEditDate" style="margin-bottom:0;"></div>
+      <div><div style="display:flex;justify-content:space-between;align-items:baseline;"><label class="lbl">Date</label><button type="button" onclick="document.getElementById('inEditDate').value='';clearRepeat('edit')" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);" title="Remove date">Clear</button></div><input class="fi fi-sm" type="date" id="inEditDate" style="margin-bottom:0;"></div>
       <div><label class="lbl">Time</label><input class="fi fi-sm" type="time" id="inEditTime" style="margin-bottom:0;"></div>
     </div>
+    <div class="rep-row">
+      <div style="flex:1.4;min-width:0;"><label class="lbl">Repeat</label>
+        <select class="fi fi-sm" id="inEditRep" onchange="onRepChange('edit')" style="margin-bottom:0;">
+          <option value="none">Never</option>
+          <option value="daily">Daily</option>
+          <option value="weekdays">Weekdays (Mon–Fri)</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+      </div>
+      <div id="repEveryWrap-edit" style="flex:1;min-width:0;display:none;"><label class="lbl">Every</label>
+        <div style="display:flex;align-items:center;gap:6px;"><input class="fi fi-sm" type="number" min="1" max="99" value="1" id="inEditRepEvery" style="margin-bottom:0;"><span id="repUnit-edit" style="font-size:12px;color:var(--sub);white-space:nowrap;"></span></div>
+      </div>
+    </div>
+    <div class="rep-hint" id="repHint-edit" style="display:none;">When you tick this off, the next one is created automatically.</div>
     <div style="margin-top:13px;" class="mbtns">
       <button class="mbtn danger" onclick="doDeleteFromEdit()">Delete</button>
       <button class="mbtn cancel" onclick="closeM('mEditTask')">Cancel</button>
@@ -694,7 +747,7 @@ function renderSummaryView(){
     const done=lt.filter(t=>t.done).length;
     totalDone+=done; totalTasks+=lt.length;
     urgentDone+=lt.filter(t=>t.done&&t.priority==='urgent').length;
-    byList.push({label:l.label,done,total:lt.length});
+    byList.push({lid:l.id,label:l.label,done,total:lt.length});
   });
   const pct=totalTasks?Math.round(totalDone/totalTasks*100):0;
   const quote=QUOTES[d.getDay()%QUOTES.length];
@@ -716,8 +769,8 @@ function renderSummaryView(){
   byList.forEach(l=>{
     const p=l.total?Math.round(l.done/l.total*100):0;
     h+=`<div class="prog-card">
-      <div class="prog-row"><span class="prog-label">${esc(l.label)}</span><span class="prog-count">${l.done} / ${l.total}</span></div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${p}%"></div></div>
+      <div class="prog-row"><span class="prog-label" style="display:inline-flex;align-items:center;gap:7px;"><i class="ldot" style="background:${listColor(l.lid)}"></i>${esc(l.label)}</span><span class="prog-count">${l.done} / ${l.total}</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${listColor(l.lid)}"></div></div>
     </div>`;
   });
   h+=`</div>`;
@@ -725,6 +778,47 @@ function renderSummaryView(){
 }
 
 // ═══════════════════════════ TABS ═══════════════════════════════
+// ── List colors ──────────────────────────────────────────────────
+const LIST_COLORS=['#0071E3','#34C759','#FF9500','#FF3B30','#AF52DE','#FF2D55','#00C7BE','#5E5CE6','#8E8E93','#A2845E'];
+const DEFAULT_LIST_COLORS={move:'#FF9500',personal:'#AF52DE',work:'#0071E3'};
+const LC={new:'',edit:''};   // color being chosen in the New / Edit checklist windows
+const HEX6=/^#[0-9a-fA-F]{6}$/;
+
+function listColor(lid){
+  const l=lists.find(x=>x.id===lid);
+  if(l&&HEX6.test(l.color||'')) return l.color;
+  if(DEFAULT_LIST_COLORS[lid]) return DEFAULT_LIST_COLORS[lid];
+  let h=0; for(const ch of String(lid)) h=(h*31+ch.charCodeAt(0))>>>0;   // stable fallback per list
+  return LIST_COLORS[h%LIST_COLORS.length];
+}
+function nextFreeListColor(){
+  const used=lists.map(l=>listColor(l.id).toLowerCase());
+  return LIST_COLORS.find(x=>!used.includes(x.toLowerCase()))||LIST_COLORS[lists.length%LIST_COLORS.length];
+}
+function renderListColorPicker(which){
+  const box=document.getElementById(which==='new'?'newListColors':'editListColors'); if(!box) return;
+  const cur=(LC[which]||'').toLowerCase();
+  const inPalette=LIST_COLORS.some(x=>x.toLowerCase()===cur);
+  box.innerHTML=LIST_COLORS.map(x=>`<span class="lc-swatch${x.toLowerCase()===cur?' on':''}" style="background:${x}" onclick="pickListColor('${which}','${x}')" title="${x}"></span>`).join('')
+    +`<label class="lc-custom${inPalette?'':' on'}" title="Custom color"${(!inPalette&&HEX6.test(cur))?` style="background:${cur}"`:''}><span class="lc-plus">${inPalette?'+':''}</span><input type="color" value="${HEX6.test(cur)?cur:'#0071e3'}" oninput="pickListColor('${which}',this.value,true)"></label>`;
+}
+function pickListColor(which,col,fromCustom){
+  if(!HEX6.test(col)) return;
+  LC[which]=col;
+  if(!fromCustom){ renderListColorPicker(which); return; }
+  // the native picker stays mounted while you drag, so only update the highlight
+  const box=document.getElementById(which==='new'?'newListColors':'editListColors'); if(!box) return;
+  box.querySelectorAll('.lc-swatch').forEach(s=>s.classList.remove('on'));
+  const cu=box.querySelector('.lc-custom');
+  if(cu){ cu.classList.add('on'); cu.style.background=col; const pl=cu.querySelector('.lc-plus'); if(pl) pl.textContent=''; }
+}
+function openNewList(){
+  LC.new=nextFreeListColor(); renderListColorPicker('new');
+  openM('mNewList');
+  setTimeout(()=>document.getElementById('inNewList').focus(),120);
+}
+// ── end list colors ──
+
 function renderTabs(){
   const overdueCount=lists.reduce((n,l)=>n+(tasks[l.id]||[]).filter(t=>!t.done&&isPast(t.date)).length,0);
   const SPECIAL=[{id:'__summary__',label:'Summary'},{id:'__today__',label:'Today'},{id:'__overdue__',label:'Overdue'}];
@@ -739,7 +833,10 @@ function renderTabs(){
     const delIcon=isCustom?`<span class="tab-del" onclick="event.stopPropagation();doDeleteList('${l.id}')">×</span>`:'';
     const dot=(isOvd&&overdueCount>0)?`<span class="badge-dot"></span>`:'';
     const drag=isMovable?`draggable="true" ondragstart="onTabDragStart(event,'${l.id}')" ondragover="onTabDragOver(event,'${l.id}')" ondrop="onTabDrop(event,'${l.id}')" ondragend="onTabDragEnd()"`:'' ;
-    return `<button class="tab${activeTab===l.id?' active':''}${isOvd?' overdue-tab':''}" ${drag} onclick="switchTab('${l.id}')">${esc(l.label)}${dot}${editIcon}${delIcon}</button>`;
+    const lcol=isMovable?listColor(l.id):'';
+    const ldot=isMovable?`<i class="ldot" style="background:${lcol}"></i>`:'';
+    const actStyle=(isMovable&&activeTab===l.id)?` style="border-bottom-color:${lcol}"`:'';
+    return `<button class="tab${activeTab===l.id?' active':''}${isOvd?' overdue-tab':''}" ${drag}${actStyle} onclick="switchTab('${l.id}')">${ldot}${esc(l.label)}${dot}${editIcon}${delIcon}</button>`;
   }).join('');
 }
 
@@ -846,9 +943,10 @@ function renderTodayView(){
     h+=`<div class="empty-today"><div class="e-icon">✅</div><h3>All clear for today!</h3><p>Tasks with today's date appear here automatically. They also stay in their original tab.</p></div>`;
   } else {
     const grouped={};
-    pending.forEach(x=>{if(!grouped[x.lid])grouped[x.lid]={label:x.label,items:[]};grouped[x.lid].items.push(x);});
+    pending.forEach(x=>{if(!grouped[x.lid])grouped[x.lid]={label:x.label,lid:x.lid,items:[]};grouped[x.lid].items.push(x);});
     Object.values(grouped).forEach(g=>{
-      h+=`<div class="today-group"><div class="today-group-lbl">${esc(g.label)}</div>`;
+      const gc=listColor(g.lid);
+      h+=`<div class="today-group"><div class="today-group-lbl" style="background:${gc}22;color:var(--text);display:inline-flex;align-items:center;gap:6px;"><i class="ldot" style="background:${gc}"></i>${esc(g.label)}</div>`;
       g.items.forEach(x=>h+=mirrorTaskHTML(x.t,x.lid));
       h+=`</div>`;
     });
@@ -901,17 +999,18 @@ function renderListView(lid){
   const done=allT.filter(t=>t.done).length, total=allT.length;
 
   const listObj=lists.find(l=>l.id===lid)||{};
+  const lc=listColor(lid);
   const showProg=listObj.showProgress!==false;
   let h=`<div style="max-width:680px;margin:0 auto;">
     ${showProg?`<div class="prog-card">
       <div class="prog-row">
-        <span class="prog-label">${esc(label)}</span>
+        <span class="prog-label" style="display:inline-flex;align-items:center;gap:7px;"><i class="ldot" style="background:${lc}"></i>${esc(label)}</span>
         <span style="display:flex;align-items:center;gap:10px;">
           <span class="prog-count">${done} / ${total}</span>
           <button onclick="toggleProgress('${lid}')" style="background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;font-family:var(--font);">Hide</button>
         </span>
       </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${total?Math.round(done/total*100):0}%"></div></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${total?Math.round(done/total*100):0}%;background:${lc}"></div></div>
     </div>`:`<div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button onclick="toggleProgress('${lid}')" style="background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);cursor:pointer;font-family:var(--font);">Show progress</button></div>`}`;
 
   (cats[lid]||[]).forEach(cat=>{
@@ -954,7 +1053,7 @@ function taskCardHTML(t,lid){
     <div class="chk" onclick="toggleTask(${t.id},'${lid}')"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.5"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
     <div class="task-info" onclick="openEditTask(${t.id},'${lid}')">
       <div class="task-name">${esc(t.name)}</div>
-      <div class="task-meta">${p?`<span class="tag ${p.c}">${p.l}</span>`:''}${tod?'<span class="tag" style="background:var(--amber-bg);color:var(--amber-text);">Today</span>':''}${dtH}</div>
+      <div class="task-meta">${p?`<span class="tag ${p.c}">${p.l}</span>`:''}${tod?'<span class="tag" style="background:var(--amber-bg);color:var(--amber-text);">Today</span>':''}${dtH}${repeatTag(t)}</div>
       ${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}
       ${checksHTML(t,lid)}
     </div>
@@ -970,15 +1069,17 @@ function mirrorTaskHTML(t,lid,listLabel){
   const p=t.priority?(priMeta[t.priority]||priMeta.normal):null;
   const ov=isPast(t.date)&&!t.done;
   const src=listLabel||lists.find(l=>l.id===lid)?.label||'';
-  return `<div class="task-card${t.done?' done':''}${ov?' overdue':''}">
+  const lc=listColor(lid);
+  return `<div class="task-card${t.done?' done':''}${ov?' overdue':''}" style="border-left:4px solid ${lc};">
     <div class="chk" onclick="toggleTask(${t.id},'${lid}')"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.5"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
     <div class="task-info" onclick="openEditTask(${t.id},'${lid}')">
       <div class="task-name">${esc(t.name)}</div>
       <div class="task-meta">
         ${p?`<span class="tag ${p.c}">${p.l}</span>`:''}
-        ${src?`<span class="task-src">${esc(src)}</span>`:''}
+        ${src?`<span class="list-chip" style="background:${lc}22"><i class="ldot" style="background:${lc}"></i>${esc(src)}</span>`:''}
         ${t.cat?`<span class="task-src">${esc(t.cat)}</span>`:''}
         ${t.time?`<span class="task-dt">${fmtTime(t.time)}</span>`:''}
+        ${repeatTag(t)}
         ${ov?`<span class="task-dt ovd">Overdue: ${fmtDate(t.date)}</span>`:''}
       </div>
       ${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}
@@ -1015,11 +1116,26 @@ function toggleCheck(id,lid,idx){
 function renderCheckDraft(which){
   const box=document.getElementById(which==='add'?'inTaskChecks':'inEditChecks');
   if(!box) return;
+  const n=CK[which].length;
   box.innerHTML=CK[which].map((x,i)=>`<div class="ck-row">
     <span class="ck-box${x.done?' on':''}" onclick="toggleCheckDraft('${which}',${i})"></span>
     <input class="ck-input" value="${esc(x.text)}" placeholder="Checkbox item…" oninput="CK['${which}'][${i}].text=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();addCheckDraft('${which}');}">
+    <button type="button" class="ck-mv" data-mv="up-${i}" onclick="moveCheckDraft('${which}',${i},-1)" title="Move up"${i===0?' disabled':''}>▲</button>
+    <button type="button" class="ck-mv" data-mv="down-${i}" onclick="moveCheckDraft('${which}',${i},1)" title="Move down"${i===n-1?' disabled':''}>▼</button>
     <button type="button" class="ck-x" onclick="removeCheckDraft('${which}',${i})" title="Remove checkbox">✕</button>
   </div>`).join('');
+}
+function moveCheckDraft(which,i,dir){
+  const arr=CK[which], j=i+dir;
+  if(j<0||j>=arr.length) return;
+  const tmp=arr[i]; arr[i]=arr[j]; arr[j]=tmp;
+  renderCheckDraft(which);
+  // keep focus on the moved item's arrow so you can keep pressing it
+  const box=document.getElementById(which==='add'?'inTaskChecks':'inEditChecks');
+  const same=box.querySelector('[data-mv="'+(dir>0?'down':'up')+'-'+j+'"]');
+  const other=box.querySelector('[data-mv="'+(dir>0?'up':'down')+'-'+j+'"]');
+  const btn=(same&&!same.disabled)?same:other;
+  if(btn) btn.focus();
 }
 function addCheckDraft(which){
   CK[which].push({text:'',done:false});
@@ -1034,10 +1150,115 @@ function cleanChecks(which){
   return CK[which].map(x=>({text:x.text.trim(),done:!!x.done})).filter(x=>x.text);
 }
 
+// ── Recurring tasks ──────────────────────────────────────────────
+const REPIDS={
+  add:{sel:'inTaskRep',ev:'inTaskRepEvery',date:'inTaskDate',wrap:'repEveryWrap-add',unit:'repUnit-add',hint:'repHint-add'},
+  edit:{sel:'inEditRep',ev:'inEditRepEvery',date:'inEditDate',wrap:'repEveryWrap-edit',unit:'repUnit-edit',hint:'repHint-edit'}
+};
+const REP_UNITS={daily:'day(s)',weekly:'week(s)',monthly:'month(s)',yearly:'year(s)'};
+
+function parseYMD(s){ const p=s.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function fmtYMD(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function addDaysYMD(s,n){ const d=parseYMD(s); d.setDate(d.getDate()+n); return fmtYMD(d); }
+function addMonthsYMD(s,n){
+  const d=parseYMD(s), day=d.getDate();
+  const t=new Date(d.getFullYear(),d.getMonth()+n,1);
+  const dim=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();
+  t.setDate(Math.min(day,dim));          // Jan 31 + 1 month = Feb 28/29
+  return fmtYMD(t);
+}
+// k-th occurrence counted from the original start date, so months never drift (Jan 31 -> Feb 28 -> Mar 31)
+function repOccurrence(anchor,rep,every,k){
+  const n=Math.max(1,every||1);
+  if(rep==='daily')   return addDaysYMD(anchor,n*k);
+  if(rep==='weekly')  return addDaysYMD(anchor,7*n*k);
+  if(rep==='monthly') return addMonthsYMD(anchor,n*k);
+  if(rep==='yearly')  return addMonthsYMD(anchor,12*n*k);
+  return '';
+}
+// Next due date: always after BOTH the current due date and today, so finishing a late
+// task never gives you a new task that is already overdue.
+function nextRepeatDate(t,today){
+  today=today||todayStr();
+  const rep=t.rep, base=t.date;
+  if(!rep||rep==='none'||!base) return '';
+  const floor=base>today?base:today;
+  if(rep==='weekdays'){
+    let d=floor;
+    for(let i=0;i<10;i++){ d=addDaysYMD(d,1); const wd=parseYMD(d).getDay(); if(wd!==0&&wd!==6) return d; }
+    return d;
+  }
+  const anchor=t.anchor||base;
+  for(let k=1;k<5000;k++){ const occ=repOccurrence(anchor,rep,t.repEvery,k); if(occ>floor) return occ; }
+  return '';
+}
+function repeatLabel(t){
+  if(!t.rep||t.rep==='none') return '';
+  if(t.rep==='weekdays') return 'Weekdays';
+  const n=t.repEvery||1;
+  const names={daily:['Daily','days'],weekly:['Weekly','weeks'],monthly:['Monthly','months'],yearly:['Yearly','years']}[t.rep];
+  if(!names) return '';
+  return n>1?'Every '+n+' '+names[1]:names[0];
+}
+function repeatTag(t){ const l=repeatLabel(t); return l?`<span class="task-dt" title="Repeats">🔁 ${l}</span>`:''; }
+
+function spawnNext(t,lid){
+  const nd=nextRepeatDate(t);
+  if(!nd) return;
+  if(t.spawnedId && (tasks[lid]||[]).some(x=>x.id===t.spawnedId)) return;   // next one already exists
+  const nt={id:nextId++,name:t.name,note:t.note||'',priority:t.priority||'none',cat:t.cat,date:nd,time:t.time||'',
+    checks:(t.checks||[]).map(x=>({text:x.text,done:false})),done:false,
+    rep:t.rep,repEvery:t.repEvery||1,anchor:t.anchor||t.date};
+  (tasks[lid]=tasks[lid]||[]).push(nt);
+  t.spawnedId=nt.id;
+}
+function unspawn(t,lid){
+  if(!t.spawnedId) return;
+  const list=tasks[lid]||[];
+  const idx=list.findIndex(x=>x.id===t.spawnedId);
+  if(idx===-1){ t.spawnedId=null; return; }
+  if(!list[idx].done){ list.splice(idx,1); t.spawnedId=null; }   // un-ticking removes the unfinished next one
+}
 function toggleTask(id,lid){
   const t=(tasks[lid]||[]).find(t=>t.id===id); if(!t)return;
-  t.done=!t.done; save();
+  t.done=!t.done;
+  if(t.rep&&t.rep!=='none'){ if(t.done) spawnNext(t,lid); else unspawn(t,lid); }
+  save();
 }
+
+function syncRepUI(which){
+  const ids=REPIDS[which];
+  const rep=document.getElementById(ids.sel).value;
+  const on=rep!=='none';
+  document.getElementById(ids.wrap).style.display=(on&&rep!=='weekdays')?'block':'none';
+  document.getElementById(ids.hint).style.display=on?'block':'none';
+  const u=document.getElementById(ids.unit); if(u) u.textContent=REP_UNITS[rep]||'';
+}
+function onRepChange(which){
+  const ids=REPIDS[which];
+  const dateEl=document.getElementById(ids.date);
+  if(document.getElementById(ids.sel).value!=='none'&&!dateEl.value) dateEl.value=todayStr();   // a repeat needs a start date
+  syncRepUI(which);
+}
+function clearRepeat(which){ document.getElementById(REPIDS[which].sel).value='none'; syncRepUI(which); }
+function setRepeatFields(which,t){
+  const ids=REPIDS[which];
+  document.getElementById(ids.sel).value=(t&&t.rep)||'none';
+  document.getElementById(ids.ev).value=(t&&t.repEvery)||1;
+  syncRepUI(which);
+}
+function readRepeat(which){
+  const ids=REPIDS[which];
+  const date=document.getElementById(ids.date).value;
+  let rep=document.getElementById(ids.sel).value;
+  let every=parseInt(document.getElementById(ids.ev).value,10);
+  if(!(every>=1)) every=1; if(every>99) every=99;
+  if(!date) rep='none';                       // no date, nothing to repeat from
+  if(rep==='none'||rep==='weekdays') every=1;
+  return {rep,every,date};
+}
+// ── end recurring ──
+
 function doDeleteTask(id,lid){
   tasks[lid]=(tasks[lid]||[]).filter(t=>t.id!==id); save();
 }
@@ -1052,6 +1273,7 @@ function openAddTask(lid,cat){
   document.getElementById('inTaskPri').value='none';
   document.getElementById('inTaskDate').value='';
   document.getElementById('inTaskTime').value='';
+  setRepeatFields('add',null);
   openM('mAddTask');
   setTimeout(()=>document.getElementById('inTaskName').focus(),120);
 }
@@ -1059,7 +1281,8 @@ function doAddTask(){
   const name=document.getElementById('inTaskName').value.trim(); if(!name)return;
   const lid=_addTaskLid;
   if(!tasks[lid])tasks[lid]=[];
-  tasks[lid].push({id:nextId++,name,note:document.getElementById('inTaskNote').value.trim(),priority:document.getElementById('inTaskPri').value,cat:document.getElementById('inTaskCat').value,date:document.getElementById('inTaskDate').value,time:document.getElementById('inTaskTime').value,checks:cleanChecks('add'),done:false});
+  const rp=readRepeat('add');
+  tasks[lid].push({id:nextId++,name,note:document.getElementById('inTaskNote').value.trim(),priority:document.getElementById('inTaskPri').value,cat:document.getElementById('inTaskCat').value,date:rp.date,time:document.getElementById('inTaskTime').value,checks:cleanChecks('add'),rep:rp.rep,repEvery:rp.every,anchor:rp.rep!=='none'?rp.date:'',done:false});
   closeM('mAddTask'); save();
 }
 
@@ -1073,6 +1296,7 @@ function openEditTask(id,lid){
   document.getElementById('inEditPri').value=t.priority||'none';
   document.getElementById('inEditDate').value=t.date||'';
   document.getElementById('inEditTime').value=t.time||'';
+  setRepeatFields('edit',t);
   const editLid=_editTaskLid||f.lid;
   document.getElementById('inEditTaskCat').innerHTML=(cats[editLid]||[]).map(c=>`<option value="${esc(c)}"${c===t.cat?' selected':''}>${esc(c)}</option>`).join('');
   openM('mEditTask');
@@ -1086,8 +1310,14 @@ function doSaveEdit(){
   t.note=document.getElementById('inEditNote').value.trim();
   t.priority=document.getElementById('inEditPri').value;
   t.cat=document.getElementById('inEditTaskCat').value;
-  t.date=document.getElementById('inEditDate').value;
+  const rp=readRepeat('edit');
+  const prevKey=(t.rep||'none')+'|'+(t.repEvery||1)+'|'+(t.date||'');
+  t.date=rp.date;
   t.time=document.getElementById('inEditTime').value;
+  t.rep=rp.rep; t.repEvery=rp.every;
+  // keep the original start date as the anchor unless you changed the date or the rule
+  if(rp.rep==='none') t.anchor='';
+  else if(!t.anchor||prevKey!==(rp.rep+'|'+rp.every+'|'+rp.date)) t.anchor=rp.date;
   t.checks=cleanChecks('edit');
   closeM('mEditTask'); save();
 }
@@ -1099,19 +1329,20 @@ function doDeleteFromEdit(){
 function doCreateList(){
   const name=document.getElementById('inNewList').value.trim(); if(!name)return;
   const id='l'+(nextListId++);
-  lists.push({id,label:name,showProgress:true}); cats[id]=['General']; tasks[id]=[];
+  lists.push({id,label:name,showProgress:true,color:HEX6.test(LC.new)?LC.new:nextFreeListColor()}); cats[id]=['General']; tasks[id]=[];
   closeM('mNewList'); document.getElementById('inNewList').value='';
   saveLocal(); rebuildViewDivs(); renderAll(); switchTab(id);
 }
 function doOpenEditList(lid){
   _editListId=lid;
   document.getElementById('inEditList').value=lists.find(l=>l.id===lid)?.label||'';
+  LC.edit=listColor(lid); renderListColorPicker('edit');
   openM('mEditList');
   setTimeout(()=>document.getElementById('inEditList').focus(),120);
 }
 function doEditList(){
   const name=document.getElementById('inEditList').value.trim(); if(!name)return;
-  const l=lists.find(l=>l.id===_editListId); if(l)l.label=name;
+  const l=lists.find(l=>l.id===_editListId); if(l){ l.label=name; if(HEX6.test(LC.edit)) l.color=LC.edit; }
   closeM('mEditList'); save();
 }
 function doDeleteList(lid){
