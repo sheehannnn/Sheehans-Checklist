@@ -438,7 +438,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
         <div style="display:flex;align-items:center;gap:6px;"><input class="fi fi-sm" type="number" min="1" max="99" value="1" id="inTaskRepEvery" style="margin-bottom:0;"><span id="repUnit-add" style="font-size:12px;color:var(--sub);white-space:nowrap;"></span></div>
       </div>
     </div>
-    <div class="rep-hint" id="repHint-add" style="display:none;">When you tick this off, the next one is created automatically.</div>
+    <div class="rep-hint" id="repHint-add" style="display:none;">When you tick this off, the next one is created automatically, dated one step after this task's date, even if you finish it late.</div>
     <div style="margin-top:13px;" class="mbtns"><button class="mbtn cancel" onclick="closeM('mAddTask')">Cancel</button><button class="mbtn ok" onclick="doAddTask()">Add task</button></div>
   </div>
 </div>
@@ -481,7 +481,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
         <div style="display:flex;align-items:center;gap:6px;"><input class="fi fi-sm" type="number" min="1" max="99" value="1" id="inEditRepEvery" style="margin-bottom:0;"><span id="repUnit-edit" style="font-size:12px;color:var(--sub);white-space:nowrap;"></span></div>
       </div>
     </div>
-    <div class="rep-hint" id="repHint-edit" style="display:none;">When you tick this off, the next one is created automatically.</div>
+    <div class="rep-hint" id="repHint-edit" style="display:none;">When you tick this off, the next one is created automatically, dated one step after this task's date, even if you finish it late.</div>
     <div style="margin-top:13px;" class="mbtns">
       <button class="mbtn danger" onclick="doDeleteFromEdit()">Delete</button>
       <button class="mbtn cancel" onclick="closeM('mEditTask')">Cancel</button>
@@ -1176,20 +1176,19 @@ function repOccurrence(anchor,rep,every,k){
   if(rep==='yearly')  return addMonthsYMD(anchor,12*n*k);
   return '';
 }
-// Next due date: always after BOTH the current due date and today, so finishing a late
-// task never gives you a new task that is already overdue.
-function nextRepeatDate(t,today){
-  today=today||todayStr();
+// Next due date = the next scheduled date AFTER THIS TASK'S OWN DUE DATE.
+// It never looks at today's date or the time you tick it off, so finishing late
+// (even the next day) cannot shift the schedule: due yesterday -> next one is today.
+function nextRepeatDate(t){
   const rep=t.rep, base=t.date;
   if(!rep||rep==='none'||!base) return '';
-  const floor=base>today?base:today;
   if(rep==='weekdays'){
-    let d=floor;
+    let d=base;
     for(let i=0;i<10;i++){ d=addDaysYMD(d,1); const wd=parseYMD(d).getDay(); if(wd!==0&&wd!==6) return d; }
     return d;
   }
   const anchor=t.anchor||base;
-  for(let k=1;k<5000;k++){ const occ=repOccurrence(anchor,rep,t.repEvery,k); if(occ>floor) return occ; }
+  for(let k=1;k<5000;k++){ const occ=repOccurrence(anchor,rep,t.repEvery,k); if(occ>base) return occ; }
   return '';
 }
 function repeatLabel(t){
