@@ -253,6 +253,63 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 .ck-mv{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:6px 5px;border-radius:6px;flex-shrink:0;line-height:1;}
 .ck-mv:hover:not(:disabled){color:var(--accent);background:var(--accent-light);}
 .ck-mv:disabled{opacity:.25;cursor:default;}
+/* calendar */
+#view-__calendar__{max-width:1000px;}
+.cal-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px;}
+.cal-nav{display:flex;gap:6px;align-items:center;}
+.cal-btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:var(--r-sm);height:34px;min-width:34px;padding:0 12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);}
+.cal-btn:hover{border-color:var(--border-strong);}
+.cal-seg{display:flex;margin-left:auto;background:var(--border);border-radius:var(--r-sm);padding:2px;}
+.cal-seg button{border:none;background:none;padding:6px 14px;font-size:13px;font-weight:600;color:var(--sub);border-radius:8px;cursor:pointer;font-family:var(--font);}
+.cal-seg button.on{background:var(--card);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.cal-title{flex:1 1 100%;font-size:20px;font-weight:700;letter-spacing:-.4px;}
+.cal-legend{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-bottom:12px;font-size:12px;color:var(--sub);}
+.cal-legend>span{display:inline-flex;align-items:center;gap:5px;}
+.cal-hide{margin-left:auto;display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;}
+.cal-month{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);}
+.cal-dow,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));}
+.cal-dow div{padding:8px 2px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.cal-cell{min-height:62px;padding:5px 3px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;overflow:hidden;min-width:0;}
+.cal-cell:nth-child(7n){border-right:none;}
+.cal-cell.other{opacity:.5;}
+.cal-cell:hover{background:var(--accent-light);}
+.cal-cell.sel{box-shadow:inset 0 0 0 2px var(--accent);}
+.cal-num{font-size:12px;font-weight:600;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin:0 auto 3px;}
+.cal-cell.today .cal-num{background:var(--accent);color:#fff;}
+.cal-dots{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;}
+.cal-dots .ldot{width:7px;height:7px;}
+.cal-n{font-size:9px;color:var(--muted);font-weight:700;line-height:7px;}
+.cal-chips{display:none;}
+.cal-chip{display:block;font-size:11px;line-height:1.3;padding:2px 6px;border-radius:5px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:var(--text);border-left:3px solid transparent;}
+.cal-chip b{font-weight:700;margin-right:4px;}
+.cal-chip.done{opacity:.45;text-decoration:line-through;}
+.cal-more{font-size:10px;font-weight:700;color:var(--muted);padding:0 2px;}
+.cal-week{display:grid;grid-template-columns:1fr;gap:8px;}
+.cal-wcol{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;min-width:0;}
+.cal-wcol.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);}
+.cal-whead{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;cursor:pointer;}
+.cal-wdow{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
+.cal-wnum{font-size:18px;font-weight:700;}
+.cal-wcol.today .cal-wnum{color:var(--accent);}
+.cal-wempty{font-size:12px;color:var(--muted);font-style:italic;}
+.cal-dayinfo{font-size:13px;color:var(--sub);margin-bottom:6px;}
+.cal-sec-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:14px 0 8px;}
+.cal-hour{display:grid;grid-template-columns:58px 1fr;gap:10px;border-top:1px solid var(--border);padding:8px 4px;min-height:44px;}
+.cal-hour.now{background:var(--accent-light);border-radius:8px;}
+.cal-hlabel{font-size:11px;font-weight:600;color:var(--muted);padding-top:4px;text-align:right;}
+@media (min-width:640px){
+  .cal-cell{min-height:104px;padding:6px;}
+  .cal-num{margin:0 0 4px;}
+  .cal-dots{display:none;}
+  .cal-chips{display:block;}
+}
+@media (min-width:720px){
+  .cal-week{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;}
+  .cal-whead{flex-direction:column;gap:0;}
+  .cal-wcol{min-height:260px;padding:8px;}
+  .cal-wempty{display:none;}
+  .cal-wcol .cal-chip{white-space:normal;}
+}
 </style>
 </head>
 <body class="theme-light">
@@ -284,6 +341,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
 <div class="view" id="view-__today__"></div>
 <div class="view" id="view-__overdue__"></div>
 <div class="view" id="view-__summary__"></div>
+<div class="view" id="view-__calendar__"></div>
 
 <div class="view" id="view-__sync__">
   <div style="max-width:680px;margin:0 auto;padding:16px 0 120px;">
@@ -821,14 +879,14 @@ function openNewList(){
 
 function renderTabs(){
   const overdueCount=lists.reduce((n,l)=>n+(tasks[l.id]||[]).filter(t=>!t.done&&isPast(t.date)).length,0);
-  const SPECIAL=[{id:'__summary__',label:'Summary'},{id:'__today__',label:'Today'},{id:'__overdue__',label:'Overdue'}];
+  const SPECIAL=[{id:'__summary__',label:'Summary'},{id:'__today__',label:'Today'},{id:'__overdue__',label:'Overdue'},{id:'__calendar__',label:'Calendar'}];
   const TAIL=[{id:'__sync__',label:'Sync ☁️'}];
   const all=[...SPECIAL,...lists,...TAIL];
   document.getElementById('tabBar').innerHTML=all.map(l=>{
     const isOvd=l.id==='__overdue__';
-    const isCustom=!PROTECTED.includes(l.id)&&!['__today__','__overdue__','__summary__','__sync__','__settings__'].includes(l.id);
-    const isMovable=!['__today__','__overdue__','__summary__','__sync__','__settings__'].includes(l.id);
-    const editIcon=(!['__today__','__overdue__','__summary__','__sync__','__settings__'].includes(l.id))
+    const isCustom=!PROTECTED.includes(l.id)&&!['__today__','__overdue__','__summary__','__calendar__','__sync__','__settings__'].includes(l.id);
+    const isMovable=!['__today__','__overdue__','__summary__','__calendar__','__sync__','__settings__'].includes(l.id);
+    const editIcon=(!['__today__','__overdue__','__summary__','__calendar__','__sync__','__settings__'].includes(l.id))
       ?`<svg class="tab-edit-icon" onclick="event.stopPropagation();doOpenEditList('${l.id}')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`:'';
     const delIcon=isCustom?`<span class="tab-del" onclick="event.stopPropagation();doDeleteList('${l.id}')">×</span>`:'';
     const dot=(isOvd&&overdueCount>0)?`<span class="badge-dot"></span>`:'';
@@ -856,7 +914,7 @@ function onTabDrop(e,targetId){
 function onTabDragEnd(){ _dragTabId=null; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('drag-over')); }
 
 function isValidTab(id){
-  return ['__summary__','__today__','__overdue__','__sync__','__settings__'].includes(id) || lists.some(l=>l.id===id);
+  return ['__summary__','__today__','__overdue__','__calendar__','__sync__','__settings__'].includes(id) || lists.some(l=>l.id===id);
 }
 function switchTab(id){
   if(!isValidTab(id)) id='__summary__';
@@ -867,6 +925,7 @@ function switchTab(id){
   if(id==='__today__'){renderTodayView();document.getElementById('view-__today__').classList.add('active');}
   else if(id==='__overdue__'){renderOverdueView();document.getElementById('view-__overdue__').classList.add('active');}
   else if(id==='__summary__'){renderSummaryView();document.getElementById('view-__summary__').classList.add('active');}
+  else if(id==='__calendar__'){renderCalendarView();document.getElementById('view-__calendar__').classList.add('active');}
   else if(id==='__sync__'){document.getElementById('view-__sync__').classList.add('active');initSyncView();}
   else if(id==='__settings__'){document.getElementById('view-__settings__').classList.add('active');}
   else{renderListView(id);const v=document.getElementById('view-'+id);if(v)v.classList.add('active');}
@@ -885,6 +944,7 @@ function refreshAllViews(){
   if(activeTab==='__today__') renderTodayView();
   else if(activeTab==='__overdue__') renderOverdueView();
   else if(activeTab==='__summary__') renderSummaryView();
+  else if(activeTab==='__calendar__') renderCalendarView();
   else if(!['__sync__','__settings__'].includes(activeTab)){ renderListView(activeTab); }
   // Always silently update today+overdue counts in background
   if(activeTab!=='__today__') renderTodayView();
@@ -1396,10 +1456,141 @@ function toggleDoneSection(btn){
 
 // ═══════════════════════════ BOOT ═══════════════════════════════
 
+// ── Calendar (day / week / month) ───────────────────────────────
+const CAL_WEEK_START=0;   // 0 = weeks start on Sunday (same as the Summary tab)
+const CAL_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CAL_MONTHS_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CAL_DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const CAL_DOW_FULL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+let calView='month', calDate=todayStr(), calHideDone=false;
+
+function loadCalPrefs(){
+  try{
+    const p=JSON.parse(localStorage.getItem('sheehan_cal')||'{}');
+    if(['day','week','month'].includes(p.view)) calView=p.view;
+    calHideDone=!!p.hideDone;
+  }catch(e){}
+}
+function saveCalPrefs(){ try{localStorage.setItem('sheehan_cal',JSON.stringify({view:calView,hideDone:calHideDone}));}catch(e){} }
+loadCalPrefs();
+
+function calSetView(v){ calView=v; saveCalPrefs(); renderCalendarView(); }
+function calToday(){ calDate=todayStr(); renderCalendarView(); }
+function calGoDay(d){ calDate=d; calView='day'; saveCalPrefs(); renderCalendarView(); }
+function calToggleHideDone(){ calHideDone=!calHideDone; saveCalPrefs(); renderCalendarView(); }
+function calNav(dir){
+  if(calView==='month') calDate=addMonthsYMD(calDate,dir);
+  else if(calView==='week') calDate=addDaysYMD(calDate,7*dir);
+  else calDate=addDaysYMD(calDate,dir);
+  renderCalendarView();
+}
+function weekStartOf(s){ const off=(parseYMD(s).getDay()-CAL_WEEK_START+7)%7; return addDaysYMD(s,-off); }
+function calRange(){
+  const d=parseYMD(calDate);
+  if(calView==='month') return CAL_MONTHS[d.getMonth()]+' '+d.getFullYear();
+  if(calView==='day') return CAL_DOW_FULL[d.getDay()]+', '+CAL_MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+  const ws=weekStartOf(calDate);
+  const s=parseYMD(ws), e=parseYMD(addDaysYMD(ws,6));
+  const sm=CAL_MONTHS_SHORT[s.getMonth()], em=CAL_MONTHS_SHORT[e.getMonth()];
+  if(s.getFullYear()!==e.getFullYear()) return sm+' '+s.getDate()+', '+s.getFullYear()+' – '+em+' '+e.getDate()+', '+e.getFullYear();
+  if(s.getMonth()!==e.getMonth()) return sm+' '+s.getDate()+' – '+em+' '+e.getDate()+', '+e.getFullYear();
+  return sm+' '+s.getDate()+' – '+e.getDate()+', '+e.getFullYear();
+}
+function calTimeShort(t){
+  const p=t.split(':'), hr=+p[0], hh=hr%12||12;
+  return hh+(p[1]==='00'?'':':'+p[1])+(hr<12?'a':'p');
+}
+function calSort(a,b){
+  if(!!a.t.done!==!!b.t.done) return a.t.done?1:-1;               // unfinished first
+  const at=a.t.time||'', bt=b.t.time||'';
+  if(!at!==!bt) return at?1:-1;                                    // no-time (all day) before timed
+  if(at!==bt) return at<bt?-1:1;
+  const pa=priOrder[a.t.priority]===undefined?4:priOrder[a.t.priority];
+  const pb=priOrder[b.t.priority]===undefined?4:priOrder[b.t.priority];
+  if(pa!==pb) return pa-pb;
+  return String(a.t.name).localeCompare(String(b.t.name));
+}
+function calTasksByDate(){
+  const map={};
+  lists.forEach(l=>(tasks[l.id]||[]).forEach(t=>{
+    if(!t.date) return;
+    if(calHideDone&&t.done) return;
+    (map[t.date]=map[t.date]||[]).push({t,lid:l.id});
+  }));
+  Object.keys(map).forEach(k=>map[k].sort(calSort));
+  return map;
+}
+function calChipHTML(x){
+  const t=x.t, col=listColor(x.lid);
+  return `<div class="cal-chip${t.done?' done':''}" style="background:${col}22;border-left-color:${col}" onclick="event.stopPropagation();openEditTask(${t.id},'${x.lid}')" title="${esc(t.name)}">${t.time?`<b>${calTimeShort(t.time)}</b>`:''}${esc(t.name)}</div>`;
+}
+function renderCalMonth(by,today){
+  const d=parseYMD(calDate);
+  const first=new Date(d.getFullYear(),d.getMonth(),1);
+  const lead=(first.getDay()-CAL_WEEK_START+7)%7;
+  const dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  const rows=Math.ceil((lead+dim)/7);
+  const start=addDaysYMD(fmtYMD(first),-lead);
+  let h='<div class="cal-month"><div class="cal-dow">';
+  for(let i=0;i<7;i++) h+='<div>'+CAL_DOW[(CAL_WEEK_START+i)%7]+'</div>';
+  h+='</div><div class="cal-grid">';
+  for(let i=0;i<rows*7;i++){
+    const ds=addDaysYMD(start,i), dd=parseYMD(ds);
+    const items=by[ds]||[];
+    const chips=items.slice(0,3).map(calChipHTML).join('')+(items.length>3?`<div class="cal-more">+${items.length-3} more</div>`:'');
+    const dots=items.slice(0,4).map(x=>`<i class="ldot" style="background:${listColor(x.lid)}${x.t.done?';opacity:.35':''}"></i>`).join('')+(items.length>4?`<span class="cal-n">+${items.length-4}</span>`:'');
+    h+=`<div class="cal-cell${dd.getMonth()!==d.getMonth()?' other':''}${ds===today?' today':''}${ds===calDate?' sel':''}" onclick="calGoDay('${ds}')"><div class="cal-num">${dd.getDate()}</div><div class="cal-chips">${chips}</div><div class="cal-dots">${dots}</div></div>`;
+  }
+  return h+'</div></div>';
+}
+function renderCalWeek(by,today){
+  const start=weekStartOf(calDate);
+  let h='<div class="cal-week">';
+  for(let i=0;i<7;i++){
+    const ds=addDaysYMD(start,i), dd=parseYMD(ds), items=by[ds]||[];
+    h+=`<div class="cal-wcol${ds===today?' today':''}"><div class="cal-whead" onclick="calGoDay('${ds}')"><span class="cal-wdow">${CAL_DOW[dd.getDay()]}</span><span class="cal-wnum">${dd.getDate()}</span></div>${items.length?items.map(calChipHTML).join(''):'<div class="cal-wempty">No tasks</div>'}</div>`;
+  }
+  return h+'</div>';
+}
+function renderCalDay(by,today){
+  const items=by[calDate]||[];
+  if(!items.length) return `<div class="empty-today"><div class="e-icon">🗓️</div><h3>Nothing scheduled</h3><p>No tasks are dated ${fmtDate(calDate)}.</p></div>`;
+  const done=items.filter(x=>x.t.done).length;
+  const untimed=items.filter(x=>!x.t.time), timed=items.filter(x=>x.t.time);
+  let h=`<div class="cal-dayinfo">${items.length} task${items.length!==1?'s':''} · ${done} done</div>`;
+  if(untimed.length) h+='<div class="cal-sec-title">No time set</div>'+untimed.map(x=>mirrorTaskHTML(x.t,x.lid)).join('');
+  if(timed.length){
+    const hrs=timed.map(x=>+x.t.time.split(':')[0]);
+    const lo=Math.max(0,Math.min(...hrs)-1), hi=Math.min(23,Math.max(...hrs)+1);
+    const nowH=calDate===today?new Date().getHours():-1;
+    h+='<div class="cal-sec-title">Schedule</div>';
+    for(let hr=lo;hr<=hi;hr++){
+      const inHr=timed.filter(x=>+x.t.time.split(':')[0]===hr);
+      h+=`<div class="cal-hour${hr===nowH?' now':''}"><div class="cal-hlabel">${fmtTime(pad(hr)+':00')}</div><div>${inHr.map(x=>mirrorTaskHTML(x.t,x.lid)).join('')}</div></div>`;
+    }
+  }
+  return h;
+}
+function renderCalendarView(){
+  const el=document.getElementById('view-__calendar__'); if(!el) return;
+  const by=calTasksByDate(), today=todayStr();
+  const seg=['day','week','month'].map(v=>`<button class="${calView===v?'on':''}" onclick="calSetView('${v}')">${v.charAt(0).toUpperCase()+v.slice(1)}</button>`).join('');
+  const body=calView==='month'?renderCalMonth(by,today):calView==='week'?renderCalWeek(by,today):renderCalDay(by,today);
+  const legend=lists.map(l=>`<span><i class="ldot" style="background:${listColor(l.id)}"></i>${esc(l.label)}</span>`).join('');
+  el.innerHTML=`<div class="cal-head">
+      <div class="cal-nav"><button class="cal-btn" onclick="calNav(-1)" aria-label="Previous">‹</button><button class="cal-btn" onclick="calToday()">Today</button><button class="cal-btn" onclick="calNav(1)" aria-label="Next">›</button></div>
+      <div class="cal-seg">${seg}</div>
+      <div class="cal-title">${esc(calRange())}</div>
+    </div>
+    <div class="cal-legend">${legend}<label class="cal-hide"><input type="checkbox" ${calHideDone?'checked':''} onchange="calToggleHideDone()"> Hide completed</label></div>
+    ${body}`;
+}
+// ── end calendar ──
+
 // ── SWIPE TO SWITCH TABS ─────────────────────────────────
 let _swipeStartX=0, _swipeStartY=0, _swipeStartEl=null;
 function _getAllTabIds(){
-  const SPECIAL=['__summary__','__today__','__overdue__'];
+  const SPECIAL=['__summary__','__today__','__overdue__','__calendar__'];
   const TAIL=['__sync__','__settings__'];
   return [...SPECIAL,...lists.map(l=>l.id),...TAIL];
 }
@@ -1420,6 +1611,7 @@ document.addEventListener('touchend',e=>{
   if(modalOpen) return; // never swipe when a modal is open
   if(nav && nav.contains(_swipeStartEl)) return; // started on tab bar
   if(['INPUT','TEXTAREA','SELECT'].includes(_swipeStartEl?.tagName)) return;
+  if(activeTab==='__calendar__'){ calNav(dx<0?1:-1); return; }   // swipe = next / previous period
   const ids=_getAllTabIds();
   const cur=ids.indexOf(activeTab);
   if(cur===-1) return;
