@@ -310,6 +310,37 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
   .cal-wempty{display:none;}
   .cal-wcol .cal-chip{white-space:normal;}
 }
+/* fixed tabs (top row) + movable checklists (second row) */
+.main-tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 16px 9px;scrollbar-width:none;}
+.main-tabs::-webkit-scrollbar{display:none;}
+.ptab{flex-shrink:0;border:none;background:var(--border);color:var(--sub);font-size:13px;font-weight:600;padding:6px 13px;border-radius:18px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;font-family:var(--font);transition:background .15s,color .15s;}
+.ptab:hover{color:var(--text);}
+.ptab.active{background:var(--accent);color:#fff;}
+.ptab.overdue-tab.active{background:var(--red);}
+.ptab.active .badge-dot{background:#fff;}
+.nav .tabs-wrap{border-top:1px solid var(--border);}
+/* start / end */
+.dt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:13px;}
+.dt-grid .fi{margin-bottom:0;}
+.lbl-row{display:flex;justify-content:space-between;align-items:baseline;}
+.lnk{background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);}
+.range-err{font-size:12px;color:var(--red-text);margin:-6px 0 13px;line-height:1.4;}
+/* add from calendar */
+.cal-addbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;border:1.5px dashed var(--border-strong);background:none;color:var(--accent);border-radius:var(--r);padding:11px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px;font-family:var(--font);}
+.cal-addbtn:hover{border-color:var(--accent);}
+.cal-top{display:flex;align-items:center;justify-content:center;gap:4px;}
+.cal-top .cal-num{margin:0 auto 3px;}
+.cal-add{display:none;border:none;background:none;color:var(--accent);font-size:16px;line-height:1;cursor:pointer;padding:0 2px;opacity:.35;}
+.cal-cell:hover .cal-add,.cal-add:hover{opacity:1;}
+.cal-wadd{margin-left:auto;border:none;background:var(--accent-light);color:var(--accent);font-size:15px;line-height:1;cursor:pointer;padding:3px 8px;border-radius:8px;font-weight:700;}
+.cal-hcol{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.cal-hadd{border:none;background:none;color:var(--muted);font-size:14px;cursor:pointer;padding:0 2px;line-height:1;}
+.cal-hadd:hover{color:var(--accent);}
+@media (min-width:640px){
+  .cal-top{justify-content:space-between;}
+  .cal-top .cal-num{margin:0 0 4px;}
+  .cal-add{display:block;}
+}
 </style>
 </head>
 <body class="theme-light">
@@ -326,6 +357,7 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
       </button>
     </div>
   </div>
+  <div class="main-tabs" id="mainTabBar"></div>
   <div class="tabs-wrap">
     <div class="tabs" id="tabBar"></div>
     <button class="new-tab-btn" onclick="openNewList()" title="New checklist">+</button>
@@ -466,21 +498,25 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
     <label class="lbl">Checkboxes</label>
     <div id="inTaskChecks"></div>
     <button type="button" class="ck-add" onclick="addCheckDraft('add')">＋ Add checkbox</button>
+    <div id="addTaskListRow" style="display:none;"><label class="lbl">Checklist</label>
+      <select class="fi fi-sm" id="inTaskList" onchange="onAddListChange()" style="margin-bottom:13px;"></select></div>
     <label class="lbl">Category</label>
     <select class="fi fi-sm" id="inTaskCat" style="margin-bottom:13px;"></select>
-    <div class="grid3">
-      <div><label class="lbl">Priority</label>
-        <select class="fi fi-sm" id="inTaskPri" style="margin-bottom:0;">
-          <option value="none" selected>— No priority</option>
-          <option value="urgent">🔴 Urgent</option>
-          <option value="high">🟠 High</option>
-          <option value="normal">🔵 Normal</option>
-          <option value="low">🟢 Low</option>
-        </select>
-      </div>
-      <div><div style="display:flex;justify-content:space-between;align-items:baseline;"><label class="lbl">Date</label><button type="button" onclick="document.getElementById('inTaskDate').value='';clearRepeat('add')" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);" title="Remove date">Clear</button></div><input class="fi fi-sm" type="date" id="inTaskDate" style="margin-bottom:0;"></div>
-      <div><label class="lbl">Time</label><input class="fi fi-sm" type="time" id="inTaskTime" style="margin-bottom:0;"></div>
+    <label class="lbl">Priority</label>
+    <select class="fi fi-sm" id="inTaskPri" style="margin-bottom:13px;">
+      <option value="none" selected>— No priority</option>
+      <option value="urgent">🔴 Urgent</option>
+      <option value="high">🟠 High</option>
+      <option value="normal">🔵 Normal</option>
+      <option value="low">🟢 Low</option>
+    </select>
+    <div class="dt-grid">
+      <div><div class="lbl-row"><label class="lbl">Start date</label><button type="button" class="lnk" onclick="clearStartDate('add')">Clear</button></div><input class="fi fi-sm" type="date" id="inTaskDate" onchange="onStartDateChange('add')"></div>
+      <div><div class="lbl-row"><label class="lbl">Start time</label><button type="button" class="lnk" onclick="clearRangeField('add','time')">Clear</button></div><input class="fi fi-sm" type="time" id="inTaskTime" onchange="checkRange('add')"></div>
+      <div><div class="lbl-row"><label class="lbl">End date</label><button type="button" class="lnk" onclick="clearRangeField('add','endDate')">Clear</button></div><input class="fi fi-sm" type="date" id="inTaskEndDate" onchange="onEndDateChange('add')"></div>
+      <div><div class="lbl-row"><label class="lbl">End time</label><button type="button" class="lnk" onclick="clearRangeField('add','endTime')">Clear</button></div><input class="fi fi-sm" type="time" id="inTaskEndTime" onchange="checkRange('add')"></div>
     </div>
+    <div class="range-err" id="rangeErr-add" style="display:none;"></div>
     <div class="rep-row">
       <div style="flex:1.4;min-width:0;"><label class="lbl">Repeat</label>
         <select class="fi fi-sm" id="inTaskRep" onchange="onRepChange('add')" style="margin-bottom:0;">
@@ -511,19 +547,21 @@ body.theme-dark .nav{background:rgba(0,0,0,.88);}
     <button type="button" class="ck-add" onclick="addCheckDraft('edit')">＋ Add checkbox</button>
     <label class="lbl">Category</label>
     <select class="fi fi-sm" id="inEditTaskCat" style="margin-bottom:13px;"></select>
-    <div class="grid3">
-      <div><label class="lbl">Priority</label>
-        <select class="fi fi-sm" id="inEditPri" style="margin-bottom:0;">
-                    <option value="none">— No priority</option>
-          <option value="urgent">🔴 Urgent</option>
-          <option value="high">🟠 High</option>
-          <option value="normal">🔵 Normal</option>
-          <option value="low">🟢 Low</option>
-        </select>
-      </div>
-      <div><div style="display:flex;justify-content:space-between;align-items:baseline;"><label class="lbl">Date</label><button type="button" onclick="document.getElementById('inEditDate').value='';clearRepeat('edit')" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:0 0 5px;font-family:var(--font);" title="Remove date">Clear</button></div><input class="fi fi-sm" type="date" id="inEditDate" style="margin-bottom:0;"></div>
-      <div><label class="lbl">Time</label><input class="fi fi-sm" type="time" id="inEditTime" style="margin-bottom:0;"></div>
+    <label class="lbl">Priority</label>
+    <select class="fi fi-sm" id="inEditPri" style="margin-bottom:13px;">
+      <option value="none">— No priority</option>
+      <option value="urgent">🔴 Urgent</option>
+      <option value="high">🟠 High</option>
+      <option value="normal">🔵 Normal</option>
+      <option value="low">🟢 Low</option>
+    </select>
+    <div class="dt-grid">
+      <div><div class="lbl-row"><label class="lbl">Start date</label><button type="button" class="lnk" onclick="clearStartDate('edit')">Clear</button></div><input class="fi fi-sm" type="date" id="inEditDate" onchange="onStartDateChange('edit')"></div>
+      <div><div class="lbl-row"><label class="lbl">Start time</label><button type="button" class="lnk" onclick="clearRangeField('edit','time')">Clear</button></div><input class="fi fi-sm" type="time" id="inEditTime" onchange="checkRange('edit')"></div>
+      <div><div class="lbl-row"><label class="lbl">End date</label><button type="button" class="lnk" onclick="clearRangeField('edit','endDate')">Clear</button></div><input class="fi fi-sm" type="date" id="inEditEndDate" onchange="onEndDateChange('edit')"></div>
+      <div><div class="lbl-row"><label class="lbl">End time</label><button type="button" class="lnk" onclick="clearRangeField('edit','endTime')">Clear</button></div><input class="fi fi-sm" type="time" id="inEditEndTime" onchange="checkRange('edit')"></div>
     </div>
+    <div class="range-err" id="rangeErr-edit" style="display:none;"></div>
     <div class="rep-row">
       <div style="flex:1.4;min-width:0;"><label class="lbl">Repeat</label>
         <select class="fi fi-sm" id="inEditRep" onchange="onRepChange('edit')" style="margin-bottom:0;">
@@ -878,23 +916,23 @@ function openNewList(){
 // ── end list colors ──
 
 function renderTabs(){
-  const overdueCount=lists.reduce((n,l)=>n+(tasks[l.id]||[]).filter(t=>!t.done&&isPast(t.date)).length,0);
-  const SPECIAL=[{id:'__summary__',label:'Summary'},{id:'__today__',label:'Today'},{id:'__overdue__',label:'Overdue'},{id:'__calendar__',label:'Calendar'}];
-  const TAIL=[{id:'__sync__',label:'Sync ☁️'}];
-  const all=[...SPECIAL,...lists,...TAIL];
-  document.getElementById('tabBar').innerHTML=all.map(l=>{
-    const isOvd=l.id==='__overdue__';
-    const isCustom=!PROTECTED.includes(l.id)&&!['__today__','__overdue__','__summary__','__calendar__','__sync__','__settings__'].includes(l.id);
-    const isMovable=!['__today__','__overdue__','__summary__','__calendar__','__sync__','__settings__'].includes(l.id);
-    const editIcon=(!['__today__','__overdue__','__summary__','__calendar__','__sync__','__settings__'].includes(l.id))
-      ?`<svg class="tab-edit-icon" onclick="event.stopPropagation();doOpenEditList('${l.id}')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`:'';
+  const overdueCount=lists.reduce((n,l)=>n+(tasks[l.id]||[]).filter(t=>isOverdueTask(t)).length,0);
+  // top row: fixed sections (not movable)
+  const FIXED=[{id:'__summary__',label:'Summary'},{id:'__today__',label:'Today'},{id:'__overdue__',label:'Overdue'},{id:'__calendar__',label:'Calendar'},{id:'__sync__',label:'Sync ☁️'}];
+  document.getElementById('mainTabBar').innerHTML=FIXED.map(f=>{
+    const isOvd=f.id==='__overdue__';
+    const dot=(isOvd&&overdueCount>0)?'<span class="badge-dot"></span>':'';
+    return `<button class="ptab${activeTab===f.id?' active':''}${isOvd?' overdue-tab':''}" onclick="switchTab('${f.id}')">${esc(f.label)}${dot}</button>`;
+  }).join('');
+  // second row: your checklists (movable, editable)
+  document.getElementById('tabBar').innerHTML=lists.map(l=>{
+    const isCustom=!PROTECTED.includes(l.id);
+    const editIcon=`<svg class="tab-edit-icon" onclick="event.stopPropagation();doOpenEditList('${l.id}')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
     const delIcon=isCustom?`<span class="tab-del" onclick="event.stopPropagation();doDeleteList('${l.id}')">×</span>`:'';
-    const dot=(isOvd&&overdueCount>0)?`<span class="badge-dot"></span>`:'';
-    const drag=isMovable?`draggable="true" ondragstart="onTabDragStart(event,'${l.id}')" ondragover="onTabDragOver(event,'${l.id}')" ondrop="onTabDrop(event,'${l.id}')" ondragend="onTabDragEnd()"`:'' ;
-    const lcol=isMovable?listColor(l.id):'';
-    const ldot=isMovable?`<i class="ldot" style="background:${lcol}"></i>`:'';
-    const actStyle=(isMovable&&activeTab===l.id)?` style="border-bottom-color:${lcol}"`:'';
-    return `<button class="tab${activeTab===l.id?' active':''}${isOvd?' overdue-tab':''}" ${drag}${actStyle} onclick="switchTab('${l.id}')">${ldot}${esc(l.label)}${dot}${editIcon}${delIcon}</button>`;
+    const drag=`draggable="true" ondragstart="onTabDragStart(event,'${l.id}')" ondragover="onTabDragOver(event,'${l.id}')" ondrop="onTabDrop(event,'${l.id}')" ondragend="onTabDragEnd()"`;
+    const lcol=listColor(l.id);
+    const actStyle=activeTab===l.id?` style="border-bottom-color:${lcol}"`:'';
+    return `<button class="tab${activeTab===l.id?' active':''}" ${drag}${actStyle} onclick="switchTab('${l.id}')"><i class="ldot" style="background:${lcol}"></i>${esc(l.label)}${editIcon}${delIcon}</button>`;
   }).join('');
 }
 
@@ -968,12 +1006,12 @@ function renderTodayView(){
   const pending=[],doneArr=[];
   lists.forEach(l=>{
     (tasks[l.id]||[]).forEach(t=>{
-      if(!t.done&&isToday(t.date)) pending.push({t,lid:l.id,label:l.label});
-      if(t.done&&isToday(t.date))  doneArr.push({t,lid:l.id,label:l.label});
+      if(!t.done&&isTodayTask(t)) pending.push({t,lid:l.id,label:l.label});
+      if(t.done&&isTodayTask(t))  doneArr.push({t,lid:l.id,label:l.label});
     });
   });
   const urgent=pending.filter(x=>x.t.priority==='urgent').length;
-  const overdueCount=lists.reduce((n,l)=>n+(tasks[l.id]||[]).filter(t=>!t.done&&isPast(t.date)).length,0);
+  const overdueCount=lists.reduce((n,l)=>n+(tasks[l.id]||[]).filter(t=>isOverdueTask(t)).length,0);
   const d=new Date();
   const dateLabel=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+', '
     +['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]
@@ -1025,18 +1063,18 @@ function renderOverdueView(){
   const overdue=[],doneArr=[];
   lists.forEach(l=>{
     (tasks[l.id]||[]).forEach(t=>{
-      if(!t.done&&isPast(t.date)) overdue.push({t,lid:l.id,label:l.label});
-      if(t.done&&isPast(t.date))  doneArr.push({t,lid:l.id,label:l.label});
+      if(isOverdueTask(t)) overdue.push({t,lid:l.id,label:l.label});
+      if(t.done&&isPastTask(t))  doneArr.push({t,lid:l.id,label:l.label});
     });
   });
-  overdue.sort((a,b)=>a.t.date<b.t.date?-1:a.t.date>b.t.date?1:(priOrder[a.t.priority]??2)-(priOrder[b.t.priority]??2));
+  overdue.sort((a,b)=>{const ea=endDateOf(a.t),eb=endDateOf(b.t);return ea<eb?-1:ea>eb?1:(priOrder[a.t.priority]??2)-(priOrder[b.t.priority]??2);});
 
   let h=`<div class="overdue-hero"><h2>⚠️ Overdue</h2><div class="date-str">${overdue.length} unfinished task${overdue.length!==1?'s':''} from previous days</div></div>`;
   if(overdue.length===0&&doneArr.length===0){
     h+=`<div class="empty-today"><div class="e-icon">🎉</div><h3>No overdue tasks!</h3><p>You're all caught up. Keep it up!</p></div>`;
   } else {
     const byDate={};
-    overdue.forEach(x=>{const dk=x.t.date||'';if(!byDate[dk])byDate[dk]={date:x.t.date,items:[]};byDate[dk].items.push(x);});
+    overdue.forEach(x=>{const e=endDateOf(x.t);if(!byDate[e])byDate[e]={date:e,items:[]};byDate[e].items.push(x);});   // grouped by the day it was due (its end)
     Object.values(byDate).forEach(g=>{
       h+=`<div class="today-group"><div class="overdue-group-lbl">📅 ${fmtDate(g.date)||'No date'}</div>`;
       g.items.forEach(x=>h+=mirrorTaskHTML(x.t,x.lid,x.label));
@@ -1103,11 +1141,10 @@ function renderListView(lid){
 // ─── TASK HTML ──────────────────────────────────────────────────
 function taskCardHTML(t,lid){
   const p=t.priority?(priMeta[t.priority]||priMeta.normal):null;
-  const ov=isPast(t.date)&&!t.done, tod=isToday(t.date)&&!t.done;
+  const ov=isPastTask(t)&&!t.done, tod=isTodayTask(t)&&!t.done;
   let dtH='';
   if(t.date){
-    const lbl=ov?'Overdue: '+fmtDate(t.date):tod?'Today':fmtDate(t.date);
-    dtH=`<span class="task-dt${ov?' ovd':tod?' tod':''}">${lbl}${t.time?' · '+fmtTime(t.time):''}</span>`;
+    dtH=`<span class="task-dt${ov?' ovd':tod?' tod':''}">${ov?'Overdue: ':''}${rangeText(t,!ov)}</span>`;
   }
   return `<div class="task-card${t.done?' done':''}${ov?' overdue':''}">
     <div class="chk" onclick="toggleTask(${t.id},'${lid}')"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.5"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
@@ -1127,7 +1164,7 @@ function taskCardHTML(t,lid){
 // Mirror task used in Today and Overdue — shows source list label, same task data
 function mirrorTaskHTML(t,lid,listLabel){
   const p=t.priority?(priMeta[t.priority]||priMeta.normal):null;
-  const ov=isPast(t.date)&&!t.done;
+  const ov=isPastTask(t)&&!t.done;
   const src=listLabel||lists.find(l=>l.id===lid)?.label||'';
   const lc=listColor(lid);
   return `<div class="task-card${t.done?' done':''}${ov?' overdue':''}" style="border-left:4px solid ${lc};">
@@ -1138,9 +1175,9 @@ function mirrorTaskHTML(t,lid,listLabel){
         ${p?`<span class="tag ${p.c}">${p.l}</span>`:''}
         ${src?`<span class="list-chip" style="background:${lc}22"><i class="ldot" style="background:${lc}"></i>${esc(src)}</span>`:''}
         ${t.cat?`<span class="task-src">${esc(t.cat)}</span>`:''}
-        ${t.time?`<span class="task-dt">${fmtTime(t.time)}</span>`:''}
+        ${mirrorTimeText(t)?`<span class="task-dt">${mirrorTimeText(t)}</span>`:''}
         ${repeatTag(t)}
-        ${ov?`<span class="task-dt ovd">Overdue: ${fmtDate(t.date)}</span>`:''}
+        ${ov?`<span class="task-dt ovd">Overdue: ${fmtDate(endDateOf(t))}</span>`:''}
       </div>
       ${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}
       ${checksHTML(t,lid)}
@@ -1210,6 +1247,77 @@ function cleanChecks(which){
   return CK[which].map(x=>({text:x.text.trim(),done:!!x.done})).filter(x=>x.text);
 }
 
+// ── Start / end (date ranges) ────────────────────────────────────
+// date/time = START, endDate/endTime = optional END. endDate is only stored when it is after the start date.
+const RANGEIDS={
+  add:{date:'inTaskDate',time:'inTaskTime',endDate:'inTaskEndDate',endTime:'inTaskEndTime',err:'rangeErr-add'},
+  edit:{date:'inEditDate',time:'inEditTime',endDate:'inEditEndDate',endTime:'inEditEndTime',err:'rangeErr-edit'}
+};
+function daysBetweenYMD(a,b){ return Math.round((parseYMD(b)-parseYMD(a))/86400000); }
+function endDateOf(t){ return t.date?((t.endDate&&t.endDate>t.date)?t.endDate:t.date):''; }
+function isTodayTask(t){ const d=todayStr(); return !!t.date&&t.date<=d&&d<=endDateOf(t); }   // in progress today
+function isPastTask(t){ const e=endDateOf(t); return !!e&&e<todayStr(); }                      // its END date has passed
+function isOverdueTask(t){ return !t.done&&isPastTask(t); }
+function rangeError(date,time,endDate,endTime){
+  if(!endDate&&!endTime) return '';
+  if(!date) return 'Set a start date first.';
+  if(endDate&&endDate<date) return 'The end date is before the start date.';
+  if((!endDate||endDate===date)&&time&&endTime&&endTime<time) return 'The end time is before the start time.';
+  return '';
+}
+function cleanRange(date,endDate,endTime){
+  if(!date) return {endDate:'',endTime:''};
+  return {endDate:(endDate&&endDate>date)?endDate:'',endTime:endTime||''};
+}
+function rangeText(t,relative){
+  if(!t.date) return '';
+  const today=todayStr();
+  const dl=d=>(relative&&d===today)?'Today':fmtDate(d);
+  const st=t.time?fmtTime(t.time):'', et=t.endTime?fmtTime(t.endTime):'';
+  if(t.endDate&&t.endDate>t.date) return dl(t.date)+(st?' '+st:'')+' → '+dl(t.endDate)+(et?' '+et:'');
+  if(et) return dl(t.date)+' · '+(st?st+' – '+et:'until '+et);
+  return dl(t.date)+(st?' · '+st:'');
+}
+function mirrorTimeText(t){
+  if(t.endDate&&t.endDate>t.date) return rangeText(t,false);
+  const st=t.time?fmtTime(t.time):'', et=t.endTime?fmtTime(t.endTime):'';
+  return st&&et?st+' – '+et:st?st:et?'until '+et:'';
+}
+function readRangeFields(which){
+  const r=RANGEIDS[which], g=id=>document.getElementById(id).value;
+  return {date:g(r.date),time:g(r.time),endDate:g(r.endDate),endTime:g(r.endTime)};
+}
+function checkRange(which){
+  const f=readRangeFields(which);
+  const msg=rangeError(f.date,f.time,f.endDate,f.endTime);
+  const el=document.getElementById(RANGEIDS[which].err);
+  if(el){ el.textContent=msg; el.style.display=msg?'block':'none'; }
+  return msg;
+}
+// moving the start date moves the end date with it, so the length of the task is kept
+function onStartDateChange(which){
+  const r=RANGEIDS[which], dEl=document.getElementById(r.date), eEl=document.getElementById(r.endDate);
+  const prev=dEl.dataset.prev||'', cur=dEl.value;
+  if(prev&&cur&&eEl.value) eEl.value=addDaysYMD(eEl.value,daysBetweenYMD(prev,cur));
+  if(!cur){ eEl.value=''; document.getElementById(r.endTime).value=''; }
+  dEl.dataset.prev=cur;
+  checkRange(which);
+}
+function onEndDateChange(which){
+  const r=RANGEIDS[which], dEl=document.getElementById(r.date), eEl=document.getElementById(r.endDate);
+  if(eEl.value&&!dEl.value){ dEl.value=eEl.value; dEl.dataset.prev=eEl.value; }   // an end with no start: start there too
+  checkRange(which);
+}
+function clearStartDate(which){
+  const r=RANGEIDS[which];
+  document.getElementById(r.date).value=''; document.getElementById(r.date).dataset.prev='';
+  document.getElementById(r.endDate).value=''; document.getElementById(r.endTime).value='';   // an end needs a start
+  clearRepeat(which);
+  checkRange(which);
+}
+function clearRangeField(which,key){ document.getElementById(RANGEIDS[which][key]).value=''; checkRange(which); }
+// ── end start/end ──
+
 // ── Recurring tasks ──────────────────────────────────────────────
 const REPIDS={
   add:{sel:'inTaskRep',ev:'inTaskRepEvery',date:'inTaskDate',wrap:'repEveryWrap-add',unit:'repUnit-add',hint:'repHint-add'},
@@ -1265,7 +1373,7 @@ function spawnNext(t,lid){
   const nd=nextRepeatDate(t);
   if(!nd) return;
   if(t.spawnedId && (tasks[lid]||[]).some(x=>x.id===t.spawnedId)) return;   // next one already exists
-  const nt={id:nextId++,name:t.name,note:t.note||'',priority:t.priority||'none',cat:t.cat,date:nd,time:t.time||'',
+  const nt={id:nextId++,name:t.name,note:t.note||'',priority:t.priority||'none',cat:t.cat,date:nd,time:t.time||'',endDate:(t.endDate&&t.endDate>t.date)?addDaysYMD(nd,daysBetweenYMD(t.date,t.endDate)):'',endTime:t.endTime||'',
     checks:(t.checks||[]).map(x=>({text:x.text,done:false})),done:false,
     rep:t.rep,repEvery:t.repEvery||1,anchor:t.anchor||t.date};
   (tasks[lid]=tasks[lid]||[]).push(nt);
@@ -1322,26 +1430,46 @@ function doDeleteTask(id,lid){
   tasks[lid]=(tasks[lid]||[]).filter(t=>t.id!==id); save();
 }
 
-function openAddTask(lid,cat){
-  _addTaskLid=lid; _addTaskCat=cat;
-  document.getElementById('mAddTaskTitle').textContent='Add task — '+cat;
-  document.getElementById('inTaskCat').innerHTML=(cats[lid]||[]).map(c=>`<option value="${esc(c)}"${c===cat?' selected':''}>${esc(c)}</option>`).join('');
+function resetAddForm(date,time){
   document.getElementById('inTaskName').value='';
   document.getElementById('inTaskNote').value='';
   CK.add=[]; renderCheckDraft('add');
   document.getElementById('inTaskPri').value='none';
-  document.getElementById('inTaskDate').value='';
-  document.getElementById('inTaskTime').value='';
+  document.getElementById('inTaskDate').value=date||'';
+  document.getElementById('inTaskDate').dataset.prev=date||'';
+  document.getElementById('inTaskTime').value=time||'';
+  document.getElementById('inTaskEndDate').value='';
+  document.getElementById('inTaskEndTime').value='';
+  checkRange('add');
   setRepeatFields('add',null);
+}
+function fillAddCats(lid,selectCat){
+  const opts=(cats[lid]||[]).length?cats[lid]:['General'];
+  const sel=document.getElementById('inTaskCat');
+  sel.innerHTML=opts.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  sel.value=(selectCat&&opts.includes(selectCat))?selectCat:opts[0];
+}
+function openAddTask(lid,cat){
+  _addTaskLid=lid; _addTaskCat=cat;
+  document.getElementById('addTaskListRow').style.display='none';
+  document.getElementById('mAddTaskTitle').textContent='Add task — '+cat;
+  fillAddCats(lid,cat);
+  resetAddForm('','');
   openM('mAddTask');
   setTimeout(()=>document.getElementById('inTaskName').focus(),120);
 }
 function doAddTask(){
   const name=document.getElementById('inTaskName').value.trim(); if(!name)return;
+  if(checkRange('add')) return;                      // end before start: show the message, don't save
   const lid=_addTaskLid;
   if(!tasks[lid])tasks[lid]=[];
   const rp=readRepeat('add');
-  tasks[lid].push({id:nextId++,name,note:document.getElementById('inTaskNote').value.trim(),priority:document.getElementById('inTaskPri').value,cat:document.getElementById('inTaskCat').value,date:rp.date,time:document.getElementById('inTaskTime').value,checks:cleanChecks('add'),rep:rp.rep,repEvery:rp.every,anchor:rp.rep!=='none'?rp.date:'',done:false});
+  const rg=cleanRange(rp.date,document.getElementById('inTaskEndDate').value,document.getElementById('inTaskEndTime').value);
+  const cat=document.getElementById('inTaskCat').value;
+  if(cat&&!(cats[lid]||[]).includes(cat)){ (cats[lid]=cats[lid]||[]).push(cat); }
+  tasks[lid].push({id:nextId++,name,note:document.getElementById('inTaskNote').value.trim(),priority:document.getElementById('inTaskPri').value,cat,
+    date:rp.date,time:document.getElementById('inTaskTime').value,endDate:rg.endDate,endTime:rg.endTime,
+    checks:cleanChecks('add'),rep:rp.rep,repEvery:rp.every,anchor:rp.rep!=='none'?rp.date:'',done:false});
   closeM('mAddTask'); save();
 }
 
@@ -1354,7 +1482,11 @@ function openEditTask(id,lid){
   CK.edit=(t.checks||[]).map(x=>({text:x.text,done:!!x.done})); renderCheckDraft('edit');
   document.getElementById('inEditPri').value=t.priority||'none';
   document.getElementById('inEditDate').value=t.date||'';
+  document.getElementById('inEditDate').dataset.prev=t.date||'';
   document.getElementById('inEditTime').value=t.time||'';
+  document.getElementById('inEditEndDate').value=(t.endDate&&t.endDate>t.date)?t.endDate:'';
+  document.getElementById('inEditEndTime').value=t.endTime||'';
+  checkRange('edit');
   setRepeatFields('edit',t);
   const editLid=_editTaskLid||f.lid;
   document.getElementById('inEditTaskCat').innerHTML=(cats[editLid]||[]).map(c=>`<option value="${esc(c)}"${c===t.cat?' selected':''}>${esc(c)}</option>`).join('');
@@ -1364,6 +1496,7 @@ function openEditTask(id,lid){
 function doSaveEdit(){
   const f=findTask(_editTaskId); if(!f)return;
   const t=f.t;
+  if(checkRange('edit')) return;                     // end before start: show the message, don't save
   const name=document.getElementById('inEditName').value.trim();
   if(name) t.name=name;
   t.note=document.getElementById('inEditNote').value.trim();
@@ -1371,8 +1504,10 @@ function doSaveEdit(){
   t.cat=document.getElementById('inEditTaskCat').value;
   const rp=readRepeat('edit');
   const prevKey=(t.rep||'none')+'|'+(t.repEvery||1)+'|'+(t.date||'');
+  const rg=cleanRange(rp.date,document.getElementById('inEditEndDate').value,document.getElementById('inEditEndTime').value);
   t.date=rp.date;
   t.time=document.getElementById('inEditTime').value;
+  t.endDate=rg.endDate; t.endTime=rg.endTime;
   t.rep=rp.rep; t.repEvery=rp.every;
   // keep the original start date as the anchor unless you changed the date or the rule
   if(rp.rep==='none') t.anchor='';
@@ -1462,16 +1597,17 @@ const CAL_MONTHS=['January','February','March','April','May','June','July','Augu
 const CAL_MONTHS_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const CAL_DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const CAL_DOW_FULL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-let calView='month', calDate=todayStr(), calHideDone=false;
+let calView='month', calDate=todayStr(), calHideDone=false, calAddList='';
 
 function loadCalPrefs(){
   try{
     const p=JSON.parse(localStorage.getItem('sheehan_cal')||'{}');
     if(['day','week','month'].includes(p.view)) calView=p.view;
     calHideDone=!!p.hideDone;
+    calAddList=p.addList||'';
   }catch(e){}
 }
-function saveCalPrefs(){ try{localStorage.setItem('sheehan_cal',JSON.stringify({view:calView,hideDone:calHideDone}));}catch(e){} }
+function saveCalPrefs(){ try{localStorage.setItem('sheehan_cal',JSON.stringify({view:calView,hideDone:calHideDone,addList:calAddList}));}catch(e){} }
 loadCalPrefs();
 
 function calSetView(v){ calView=v; saveCalPrefs(); renderCalendarView(); }
@@ -1500,9 +1636,23 @@ function calTimeShort(t){
   const p=t.split(':'), hr=+p[0], hh=hr%12||12;
   return hh+(p[1]==='00'?'':':'+p[1])+(hr<12?'a':'p');
 }
+function calMonthGrid(){
+  const d=parseYMD(calDate);
+  const first=new Date(d.getFullYear(),d.getMonth(),1);
+  const lead=(first.getDay()-CAL_WEEK_START+7)%7;
+  const dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  return {start:addDaysYMD(fmtYMD(first),-lead),rows:Math.ceil((lead+dim)/7)};
+}
+function calWindow(){                       // first and last day currently on screen
+  if(calView==='month'){ const g=calMonthGrid(); return [g.start,addDaysYMD(g.start,g.rows*7-1)]; }
+  if(calView==='week'){ const s=weekStartOf(calDate); return [s,addDaysYMD(s,6)]; }
+  return [calDate,calDate];
+}
+// A multi-day task has one entry per day it covers; only its FIRST day has a start time.
+function calEntryTime(x){ return x.first?(x.t.time||''):''; }
 function calSort(a,b){
   if(!!a.t.done!==!!b.t.done) return a.t.done?1:-1;               // unfinished first
-  const at=a.t.time||'', bt=b.t.time||'';
+  const at=calEntryTime(a), bt=calEntryTime(b);
   if(!at!==!bt) return at?1:-1;                                    // no-time (all day) before timed
   if(at!==bt) return at<bt?-1:1;
   const pa=priOrder[a.t.priority]===undefined?4:priOrder[a.t.priority];
@@ -1510,36 +1660,42 @@ function calSort(a,b){
   if(pa!==pb) return pa-pb;
   return String(a.t.name).localeCompare(String(b.t.name));
 }
-function calTasksByDate(){
+function calTasksByDate(ws,we){
   const map={};
   lists.forEach(l=>(tasks[l.id]||[]).forEach(t=>{
     if(!t.date) return;
     if(calHideDone&&t.done) return;
-    (map[t.date]=map[t.date]||[]).push({t,lid:l.id});
+    const e=endDateOf(t);
+    if((ws&&e<ws)||(we&&t.date>we)) return;                        // not in the visible window
+    let d=(ws&&t.date<ws)?ws:t.date;
+    const last=(we&&e>we)?we:e;
+    for(let i=0;d<=last&&i<400;i++,d=addDaysYMD(d,1)) (map[d]=map[d]||[]).push({t,lid:l.id,first:d===t.date,last:d===e});
   }));
   Object.keys(map).forEach(k=>map[k].sort(calSort));
   return map;
 }
+function calChipTime(x){
+  const t=x.t, s=t.time?calTimeShort(t.time):'', e=t.endTime?calTimeShort(t.endTime):'';
+  if(x.first&&x.last) return s&&e?s+'–'+e:s?s:e?'→'+e:'';
+  if(x.first) return s+'→';                                        // starts here, carries on
+  if(x.last) return '→'+e;                                         // ends here
+  return '↔';                                                      // in the middle
+}
 function calChipHTML(x){
-  const t=x.t, col=listColor(x.lid);
-  return `<div class="cal-chip${t.done?' done':''}" style="background:${col}22;border-left-color:${col}" onclick="event.stopPropagation();openEditTask(${t.id},'${x.lid}')" title="${esc(t.name)}">${t.time?`<b>${calTimeShort(t.time)}</b>`:''}${esc(t.name)}</div>`;
+  const t=x.t, col=listColor(x.lid), pre=calChipTime(x), rt=rangeText(t);
+  return `<div class="cal-chip${t.done?' done':''}" style="background:${col}22;border-left-color:${col}" onclick="event.stopPropagation();openEditTask(${t.id},'${x.lid}')" title="${esc(t.name)}${rt?' — '+rt:''}">${pre?`<b>${pre}</b>`:''}${esc(t.name)}</div>`;
 }
 function renderCalMonth(by,today){
-  const d=parseYMD(calDate);
-  const first=new Date(d.getFullYear(),d.getMonth(),1);
-  const lead=(first.getDay()-CAL_WEEK_START+7)%7;
-  const dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
-  const rows=Math.ceil((lead+dim)/7);
-  const start=addDaysYMD(fmtYMD(first),-lead);
+  const d=parseYMD(calDate), g=calMonthGrid();
   let h='<div class="cal-month"><div class="cal-dow">';
   for(let i=0;i<7;i++) h+='<div>'+CAL_DOW[(CAL_WEEK_START+i)%7]+'</div>';
   h+='</div><div class="cal-grid">';
-  for(let i=0;i<rows*7;i++){
-    const ds=addDaysYMD(start,i), dd=parseYMD(ds);
+  for(let i=0;i<g.rows*7;i++){
+    const ds=addDaysYMD(g.start,i), dd=parseYMD(ds);
     const items=by[ds]||[];
     const chips=items.slice(0,3).map(calChipHTML).join('')+(items.length>3?`<div class="cal-more">+${items.length-3} more</div>`:'');
     const dots=items.slice(0,4).map(x=>`<i class="ldot" style="background:${listColor(x.lid)}${x.t.done?';opacity:.35':''}"></i>`).join('')+(items.length>4?`<span class="cal-n">+${items.length-4}</span>`:'');
-    h+=`<div class="cal-cell${dd.getMonth()!==d.getMonth()?' other':''}${ds===today?' today':''}${ds===calDate?' sel':''}" onclick="calGoDay('${ds}')"><div class="cal-num">${dd.getDate()}</div><div class="cal-chips">${chips}</div><div class="cal-dots">${dots}</div></div>`;
+    h+=`<div class="cal-cell${dd.getMonth()!==d.getMonth()?' other':''}${ds===today?' today':''}${ds===calDate?' sel':''}" onclick="calGoDay('${ds}')"><div class="cal-top"><div class="cal-num">${dd.getDate()}</div><button class="cal-add" title="Add a task on this day" onclick="event.stopPropagation();openAddTaskOnDate('${ds}')">＋</button></div><div class="cal-chips">${chips}</div><div class="cal-dots">${dots}</div></div>`;
   }
   return h+'</div></div>';
 }
@@ -1548,32 +1704,51 @@ function renderCalWeek(by,today){
   let h='<div class="cal-week">';
   for(let i=0;i<7;i++){
     const ds=addDaysYMD(start,i), dd=parseYMD(ds), items=by[ds]||[];
-    h+=`<div class="cal-wcol${ds===today?' today':''}"><div class="cal-whead" onclick="calGoDay('${ds}')"><span class="cal-wdow">${CAL_DOW[dd.getDay()]}</span><span class="cal-wnum">${dd.getDate()}</span></div>${items.length?items.map(calChipHTML).join(''):'<div class="cal-wempty">No tasks</div>'}</div>`;
+    h+=`<div class="cal-wcol${ds===today?' today':''}"><div class="cal-whead" onclick="calGoDay('${ds}')"><span class="cal-wdow">${CAL_DOW[dd.getDay()]}</span><span class="cal-wnum">${dd.getDate()}</span><button class="cal-wadd" title="Add a task on this day" onclick="event.stopPropagation();openAddTaskOnDate('${ds}')">＋</button></div>${items.length?items.map(calChipHTML).join(''):'<div class="cal-wempty">No tasks</div>'}</div>`;
   }
   return h+'</div>';
 }
 function renderCalDay(by,today){
   const items=by[calDate]||[];
-  if(!items.length) return `<div class="empty-today"><div class="e-icon">🗓️</div><h3>Nothing scheduled</h3><p>No tasks are dated ${fmtDate(calDate)}.</p></div>`;
+  const addBtn=`<button class="cal-addbtn" onclick="openAddTaskOnDate('${calDate}')">＋ Add task on ${fmtDate(calDate)}</button>`;
+  if(!items.length) return addBtn+`<div class="empty-today"><div class="e-icon">🗓️</div><h3>Nothing scheduled</h3><p>No tasks are dated ${fmtDate(calDate)}.</p></div>`;
   const done=items.filter(x=>x.t.done).length;
-  const untimed=items.filter(x=>!x.t.time), timed=items.filter(x=>x.t.time);
-  let h=`<div class="cal-dayinfo">${items.length} task${items.length!==1?'s':''} · ${done} done</div>`;
+  const untimed=items.filter(x=>!calEntryTime(x)), timed=items.filter(x=>calEntryTime(x));
+  let h=addBtn+`<div class="cal-dayinfo">${items.length} task${items.length!==1?'s':''} · ${done} done</div>`;
   if(untimed.length) h+='<div class="cal-sec-title">No time set</div>'+untimed.map(x=>mirrorTaskHTML(x.t,x.lid)).join('');
   if(timed.length){
-    const hrs=timed.map(x=>+x.t.time.split(':')[0]);
+    const hrs=timed.map(x=>+calEntryTime(x).split(':')[0]);
     const lo=Math.max(0,Math.min(...hrs)-1), hi=Math.min(23,Math.max(...hrs)+1);
     const nowH=calDate===today?new Date().getHours():-1;
     h+='<div class="cal-sec-title">Schedule</div>';
     for(let hr=lo;hr<=hi;hr++){
-      const inHr=timed.filter(x=>+x.t.time.split(':')[0]===hr);
-      h+=`<div class="cal-hour${hr===nowH?' now':''}"><div class="cal-hlabel">${fmtTime(pad(hr)+':00')}</div><div>${inHr.map(x=>mirrorTaskHTML(x.t,x.lid)).join('')}</div></div>`;
+      const inHr=timed.filter(x=>+calEntryTime(x).split(':')[0]===hr);
+      h+=`<div class="cal-hour${hr===nowH?' now':''}"><div class="cal-hcol"><div class="cal-hlabel">${fmtTime(pad(hr)+':00')}</div><button class="cal-hadd" title="Add a task at this time" onclick="openAddTaskOnDate('${calDate}','${pad(hr)}:00')">＋</button></div><div>${inHr.map(x=>mirrorTaskHTML(x.t,x.lid)).join('')}</div></div>`;
     }
   }
   return h;
 }
+// ── add a task straight from the calendar ──
+function openAddTaskOnDate(ds,time){
+  if(!lists.length){ alert('Create a checklist first (the + next to your checklist tabs), then you can add tasks from the calendar.'); return; }
+  const lid=(calAddList&&lists.some(l=>l.id===calAddList))?calAddList:lists[0].id;
+  document.getElementById('inTaskList').innerHTML=lists.map(l=>`<option value="${l.id}"${l.id===lid?' selected':''}>${esc(l.label)}</option>`).join('');
+  document.getElementById('addTaskListRow').style.display='block';
+  _addTaskLid=lid;
+  fillAddCats(lid);
+  document.getElementById('mAddTaskTitle').textContent='Add task · '+fmtDate(ds);
+  resetAddForm(ds,time||'');
+  openM('mAddTask');
+  setTimeout(()=>document.getElementById('inTaskName').focus(),120);
+}
+function onAddListChange(){
+  const lid=document.getElementById('inTaskList').value;
+  _addTaskLid=lid; calAddList=lid; saveCalPrefs();
+  fillAddCats(lid);
+}
 function renderCalendarView(){
   const el=document.getElementById('view-__calendar__'); if(!el) return;
-  const by=calTasksByDate(), today=todayStr();
+  const win=calWindow(), by=calTasksByDate(win[0],win[1]), today=todayStr();
   const seg=['day','week','month'].map(v=>`<button class="${calView===v?'on':''}" onclick="calSetView('${v}')">${v.charAt(0).toUpperCase()+v.slice(1)}</button>`).join('');
   const body=calView==='month'?renderCalMonth(by,today):calView==='week'?renderCalWeek(by,today):renderCalDay(by,today);
   const legend=lists.map(l=>`<span><i class="ldot" style="background:${listColor(l.id)}"></i>${esc(l.label)}</span>`).join('');
@@ -1590,9 +1765,8 @@ function renderCalendarView(){
 // ── SWIPE TO SWITCH TABS ─────────────────────────────────
 let _swipeStartX=0, _swipeStartY=0, _swipeStartEl=null;
 function _getAllTabIds(){
-  const SPECIAL=['__summary__','__today__','__overdue__','__calendar__'];
-  const TAIL=['__sync__','__settings__'];
-  return [...SPECIAL,...lists.map(l=>l.id),...TAIL];
+  const FIXED=['__summary__','__today__','__overdue__','__calendar__','__sync__'];   // same order as the top row
+  return [...FIXED,...lists.map(l=>l.id),'__settings__'];
 }
 document.addEventListener('touchstart',e=>{
   _swipeStartX=e.touches[0].clientX;
